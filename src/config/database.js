@@ -7,7 +7,7 @@ async function Main(){
         console.log("Connected to DB successfully.");
     }
     catch(err){
-        console.log("Error occured: "+err.message)
+        throw new Error(err.message);
     }
 }
 

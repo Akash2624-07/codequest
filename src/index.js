@@ -12,16 +12,16 @@ app.use(express.json());
 app.use(cookieParser());
 
 
-async function startServer(){
+async function startServer() {
 
-    try{
+    try {
         await Main();
 
-        app.listen(process.env.PORT,()=>{
-            console.log("Server running on "+process.env.PORT);
+        app.listen(process.env.PORT || 3000, () => {
+            console.log("Server running on " + process.env.PORT);
         });
-    } 
-    catch(err){
+    }
+    catch (err) {
         console.log("Error: " + err);
         process.exit(1);
     }
