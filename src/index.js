@@ -2,7 +2,7 @@ const express = require('express');
 const cookieParser = require('cookie-parser')
 require('dotenv').config();
 const Main = require('./config/database');
-
+const authRouter = require('./routes/userAuth')
 
 
 
