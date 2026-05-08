@@ -79,4 +79,26 @@ const logout = async (req, res) => {
     }
 }
 
-module.exports = { register, login, logout };
+const adminRegister = async (req, res) => {
+    try {
+        // Validate the data
+        validate(req.body);
+
+        const { password } = req.body;
+        const hashedPassword = await bcrypt.hash(password, 12);
+
+        // Create Admin data
+        const user = await User.create({ ...req.body, password: hashedPassword, role: "admin" });
+
+        // Generate JWT token
+        const token = jwt.sign({ _id: user._id, emailId: user.emailId, role: user.role }, process.env.JWT_SECRET_KEY, { expiresIn: 60 * 60 });
+
+        res.cookie('token', token, { maxAge: 60 * 60 * 1000, httpOnly: true });
+        res.status(201).send("Admin Created Successfully");
+    }
+    catch (err) {
+        res.status(400).send("Error: " + err.message);
+    }
+}
+
+module.exports = { register, login, logout, adminRegister };
