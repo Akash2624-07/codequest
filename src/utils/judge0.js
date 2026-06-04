@@ -34,13 +34,27 @@ const submitBatch = async (submissions) => {
     return response.data; // [{ token: "abc..." }, { token: "def..." }, ...]
 }
 
+const sleep = (ms)=> new Promise(resolve => setTimeout(resolve,ms));
+
 // Token polling to get actual data
 const getSubmissionResults = async (tokens) => {
     const tokenString = tokens.map(t => t.token).join(",");
-    const { data } = await judge0Client.get(
-        `submissions/batch?tokens=${tokenString}&base64_encoded=false`
-    );
-    return data.submissions;
+
+    for(let attempts=0; attempts<10; attempts++){
+
+        const { data } = await judge0Client.get(
+            `/submissions/batch?tokens=${tokenString}&base64_encoded=false`
+        );
+        
+        const results = data.submissions;
+        const allDone = results.every(r => r.status.id!==1 && r.status.id !==2);
+
+        if (allDone){
+            return results;
+        }
+        await sleep(1000);
+    }
+    throw new Error("Server timed out");
 }
 
 
