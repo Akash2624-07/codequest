@@ -17,4 +17,4 @@ problemRouter.post("/create", adminMiddleware, createProblem);
 // problemRouter.get("/:id", getProblemById);
 // problemRouter.get("/", getAllProblem);
 
-module.exports = {problemRouter};
+module.exports = problemRouter;
