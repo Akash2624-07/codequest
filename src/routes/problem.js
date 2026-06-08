@@ -1,7 +1,7 @@
 const express = require('express');
 const problemRouter = express.Router();
 const adminMiddleware = require('../middleware/adminMiddleware');
-const { createProblem, updateProblem, deleteProblem } = require('../controller/problemController');
+const { createProblem, updateProblem, deleteProblem, getProblemById, getAllProblem } = require('../controller/problemController');
 
 
 
@@ -14,7 +14,7 @@ problemRouter.delete("/delete/:id", adminMiddleware, deleteProblem);
 
 // User access
 // problemRouter.get("/user", userSolvedProblem);
-// problemRouter.get("/:id", getProblemById);
-// problemRouter.get("/", getAllProblem);
+problemRouter.get("/:id", getProblemById);
+problemRouter.get("/", getAllProblem);
 
 module.exports = problemRouter;
