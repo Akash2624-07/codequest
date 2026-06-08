@@ -10,6 +10,12 @@ const createProblem = async (req, res) => {
 
     // Check if the reference soln is correct
     try {
+        
+        if (!visibleTestCase?.length)
+            throw new Error("Visible test cases cannot be empty");
+
+        if (!hiddenTestCase?.length)
+            throw new Error("Hidden test cases cannot be empty");
 
         const totalTestCases = [...visibleTestCase, ...hiddenTestCase];
         // referenceSolution : [{}, {}, {}];
@@ -35,7 +41,7 @@ const createProblem = async (req, res) => {
         };
 
         // All solutions validated, safe to save
-        const problem = await Problem.create({...req.body, problemCreator:req.result._id});
+        const problem = await Problem.create({ ...req.body, problemCreator: req.result._id });
 
         res.status(201).json({ message: "Problem created successfully", problem });
 
