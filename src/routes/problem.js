@@ -1,14 +1,14 @@
 const express = require('express');
 const problemRouter = express.Router();
 const adminMiddleware = require('../middleware/adminMiddleware');
-const { createProblem } = require('../controller/problemController');
+const { createProblem, updateProblem } = require('../controller/problemController');
 
 
 
 
 // Admin access only
 problemRouter.post("/create", adminMiddleware, createProblem);
-// problemRouter.patch("/:id", updateProblem);
+problemRouter.put("/update/:id", adminMiddleware, updateProblem);
 // problemRouter.delete("/:id", deleteProblem);
 
 
