@@ -57,13 +57,13 @@ const updateProblem = async (req, res) => {
 
     try {
 
-        if (!id) 
-            throw new Error("Missing ID");
+        if (!id)
+            return res.status(400).send("Missing ID Field");
 
         const problem = await Problem.findById(id);
 
-        if(!problem)
-            throw new Error("Problem does not exists");
+        if (!problem)
+            return res.status(404).send("Problem is Missing");
 
         if (!visibleTestCase?.length)
             throw new Error("Visible test cases cannot be empty");
@@ -94,14 +94,33 @@ const updateProblem = async (req, res) => {
         };
 
         // All solutions validated, safe to save
-        const newProblem = await Problem.findByIdAndUpdate(id, { ...req.body, problemCreator: req.result._id },{runValidators:true, new:true});
+        const newProblem = await Problem.findByIdAndUpdate(id, { ...req.body, problemCreator: req.result._id }, { runValidators: true, new: true });
 
         res.status(200).json({ message: "Problem updated successfully", newProblem });
     }
     catch (err) {
-        res.send("Error: " + err.message);
+        res.status(500).send("Error: " + err.message);
     }
-
 }
 
-module.exports = { createProblem, updateProblem };
+const deleteProblem = async (req, res) => {
+
+    const { id } = req.params;
+    try {
+
+        if (!id)
+            return res.status(400).send("Missing ID Field");
+
+        const problem = await Problem.findByIdAndDelete(id);
+
+        if (!problem)
+            return res.status(404).send("Problem is Missing");
+
+        res.status(200).send("Successfully Deleted");
+    }
+    catch (err) {
+        res.status(500).send("Error: " + err.message);
+    }
+}
+
+module.exports = { createProblem, updateProblem, deleteProblem };

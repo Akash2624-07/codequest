@@ -1,7 +1,7 @@
 const express = require('express');
 const problemRouter = express.Router();
 const adminMiddleware = require('../middleware/adminMiddleware');
-const { createProblem, updateProblem } = require('../controller/problemController');
+const { createProblem, updateProblem, deleteProblem } = require('../controller/problemController');
 
 
 
@@ -9,7 +9,7 @@ const { createProblem, updateProblem } = require('../controller/problemControlle
 // Admin access only
 problemRouter.post("/create", adminMiddleware, createProblem);
 problemRouter.put("/update/:id", adminMiddleware, updateProblem);
-// problemRouter.delete("/:id", deleteProblem);
+problemRouter.delete("/delete/:id", adminMiddleware, deleteProblem);
 
 
 // User access
