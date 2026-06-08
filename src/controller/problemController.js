@@ -35,7 +35,7 @@ const createProblem = async (req, res) => {
         };
 
         // All solutions validated, safe to save
-        const problem = await Problem.create(req.body);
+        const problem = await Problem.create({...req.body, problemCreator:req.result._id});
 
         res.status(201).json({ message: "Problem created successfully", problem });
 
