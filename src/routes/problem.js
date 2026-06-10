@@ -1,20 +1,24 @@
 const express = require('express');
 const problemRouter = express.Router();
+
 const adminMiddleware = require('../middleware/adminMiddleware');
+const userMiddleware = require('../middleware/userMiddleware');
 const { createProblem, updateProblem, deleteProblem, getProblemById, getAllProblem } = require('../controller/problemController');
 
 
 
+problemRouter.post("/", adminMiddleware, createProblem);
 
-// Admin access only
-problemRouter.post("/create", adminMiddleware, createProblem);
-problemRouter.put("/update/:id", adminMiddleware, updateProblem);
-problemRouter.delete("/delete/:id", adminMiddleware, deleteProblem);
+problemRouter.get("/", userMiddleware, getAllProblem);
+
+// problemRouter.get("/solved/me", userMiddleware, solvedAllProblembyUser);
+
+problemRouter.get("/:id", userMiddleware, getProblemById);
+
+problemRouter.put("/:id", adminMiddleware, updateProblem);
+
+problemRouter.delete("/:id", adminMiddleware, deleteProblem);
 
 
-// User access
-// problemRouter.get("/user", userSolvedProblem);
-problemRouter.get("/:id", getProblemById);
-problemRouter.get("/", getAllProblem);
 
 module.exports = problemRouter;
