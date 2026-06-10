@@ -123,38 +123,52 @@ const deleteProblem = async (req, res) => {
     }
 }
 
-const getProblemById = async(req,res) => {
+const getProblemById = async (req, res) => {
 
-    const {id} = req.params;
-    try{
+    const { id } = req.params;
+    try {
 
-        if(!id)
-           return res.status(400).send("Missing ID FIeld");
-        
+        if (!id)
+            return res.status(400).send("Missing ID FIeld");
+
         const problem = await Problem.findById(id);
-        
-        if(!problem)
-           return res.status(404).send("Problem Not Found");
-        
+
+        if (!problem)
+            return res.status(404).send("Problem Not Found");
+
         res.status(200).send(problem);
     }
-    catch(err){
-        res.status(500).send("Error: "+err.message);
+    catch (err) {
+        res.status(500).send("Error: " + err.message);
     }
 }
 
-const getAllProblem = async (req,res) =>{
-    
-    try{
-        const problem = await Problem.find({});
+const getAllProblem = async (req, res) => {
 
-        if(problem.length === 0)
-            return res.status(404).send("Problem is Missing");
+    try {
+        const limit = Math.max(1, Math.min(parseInt(req.query.limit) || 10, 50));
+        const cursor = req.query.cursor;
 
-        res.status(200).send(problem);
+        const query = cursor 
+            ? { _id: { $gt: cursor } } 
+            : {};
+
+        const problem = await Problem.find(query)
+            .limit(limit)
+            .sort({_id:1});
+        
+        const nextCursor = problem.length === limit
+            ? problem[problem.length-1]._id
+            : null;
+        
+        res.status(200).json({
+            problem, 
+            nextCursor, 
+            hasMore: nextCursor !== null});
+        
     }
-    catch(err){
-        res.status(500).send("Error: "+err.message);
+    catch (err) {
+        res.status(500).send("Error: " + err.message);
     }
 }
 
