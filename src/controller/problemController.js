@@ -131,7 +131,8 @@ const getProblemById = async (req, res) => {
         if (!id)
             return res.status(400).send("Missing ID FIeld");
 
-        const problem = await Problem.findById(id);
+        const problem = await Problem.findById(id)
+            .select('-hiddenTestCase -referenceSolution -problemCreator');
 
         if (!problem)
             return res.status(404).send("Problem Not Found");
@@ -155,7 +156,8 @@ const getAllProblem = async (req, res) => {
 
         const problem = await Problem.find(query)
             .limit(limit)
-            .sort({_id:1});
+            .sort({_id:1})
+            .select('_id title difficulty tags');
         
         const nextCursor = problem.length === limit
             ? problem[problem.length-1]._id
