@@ -22,7 +22,7 @@ const submissionSchema = new Schema({
     },
     status: {
         type: String,
-        enum: ['pending', 'accepted', 'wrong', 'error'],
+        enum: ['pending', 'accepted', 'wrong', 'error', 'tle'],
         default: 'pending'
     },
     runTime: {
@@ -42,21 +42,21 @@ const submissionSchema = new Schema({
         default: 0
     },
     failedCase: {
-        input:{
-            type:String,
-            default:null
+        input: {
+            type: String,
+            default: null
         },
-        expectedOutput:{
-            type:String,
-            default:null
+        expectedOutput: {
+            type: String,
+            default: null
         },
-        actualOutput:{
-            type:String,
-            default:null
+        actualOutput: {
+            type: String,
+            default: null
         },
-        stderr:{
-            type:String,
-            default:null
+        errorMessage: {
+            type: String,
+            default: null
         }
     }
 }, {

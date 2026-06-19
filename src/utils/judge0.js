@@ -43,7 +43,7 @@ const getSubmissionResults = async (tokens) => {
     for(let attempts=0; attempts<10; attempts++){
 
         const { data } = await judge0Client.get(
-            `/submissions/batch?tokens=${tokenString}&base64_encoded=false`
+            `/submissions/batch?tokens=${tokenString}&base64_encoded=true`
         );
         
         const results = data.submissions;
