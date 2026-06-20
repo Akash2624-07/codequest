@@ -150,24 +150,42 @@ const getAllProblem = async (req, res) => {
         const limit = Math.max(1, Math.min(parseInt(req.query.limit) || 10, 50));
         const cursor = req.query.cursor;
 
-        const query = cursor 
-            ? { _id: { $gt: cursor } } 
+        const query = cursor
+            ? { _id: { $gt: cursor } }
             : {};
 
         const problem = await Problem.find(query)
             .limit(limit)
-            .sort({_id:1})
+            .sort({ _id: 1 })
             .select('_id title difficulty tags');
-        
+
         const nextCursor = problem.length === limit
-            ? problem[problem.length-1]._id
+            ? problem[problem.length - 1]._id
             : null;
-        
+
         res.status(200).json({
-            problem, 
-            nextCursor, 
-            hasMore: nextCursor !== null});
-        
+            problem,
+            nextCursor,
+            hasMore: nextCursor !== null
+        });
+
+    }
+    catch (err) {
+        res.status(500).send("Error: " + err.message);
+    }
+}
+
+const solvedProblemsbyUser = async (req, res) => {
+
+    try {
+
+        await req.result.populate({
+            path: "problemSolved",
+            select: "_id title tags difficulty"
+        });
+
+        res.status(200).send(req.result.problemSolved);
+
     }
     catch (err) {
         res.status(500).send("Error: " + err.message);

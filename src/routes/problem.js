@@ -3,7 +3,7 @@ const problemRouter = express.Router();
 
 const adminMiddleware = require('../middleware/adminMiddleware');
 const userMiddleware = require('../middleware/userMiddleware');
-const { createProblem, updateProblem, deleteProblem, getProblemById, getAllProblem } = require('../controller/problemController');
+const { createProblem, updateProblem, deleteProblem, getProblemById, getAllProblem, solvedProblemsbyUser } = require('../controller/problemController');
 
 
 
@@ -11,7 +11,7 @@ problemRouter.post("/", adminMiddleware, createProblem);
 
 problemRouter.get("/", userMiddleware, getAllProblem);
 
-// problemRouter.get("/solved/me", userMiddleware, solvedAllProblembyUser);
+problemRouter.get("/solved/me", userMiddleware, solvedProblemsbyUser);
 
 problemRouter.get("/:id", userMiddleware, getProblemById);
 
