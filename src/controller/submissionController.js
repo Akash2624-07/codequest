@@ -116,4 +116,47 @@ const submitCode = async (req, res) => {
     }
 }
 
-module.exports = submitCode;
+const runCode = async (req, res) => {
+    try {
+
+        const problemId = req.params.id;
+        const { code, language } = req.body;
+
+        if (!problemId || !code || !language)
+            return res.status(400).send("Some fields are missing");
+
+        const problem = await Problem.findById(problemId);
+        if (!problem)
+            return res.status(404).send("Problem not found");
+
+        const { visibleTestCase } = problem;
+
+        // Make submissions object to send to Judge0
+        const languageId = getLanguageId(language);
+        const submissions = visibleTestCase.map(({ input, output }) => ({
+            language_id: languageId,
+            source_code: code,
+            stdin: input,
+            expected_output: output,
+        }));
+
+        // Submit to Judge0
+        const tokenObjects = await submitBatch(submissions);
+        const results = await getSubmissionResults(tokenObjects);
+
+        const output = visibleTestCase.map((testCase, index) => ({
+            input: testCase.input,
+            expectedOutput: testCase.output,
+            actualOutput: decode(results[index].stdout),
+            passed: results[index].status.id === 3,
+            errorMessage: decode(results[index].stderr) ?? decode(results[index].compile_output) ?? decode(results[index].message) ?? null
+        }));
+
+        res.status(200).send(output);
+
+    } catch (err) {
+        res.status(500).send("Internal Server Error " + err);
+    }
+}
+
+module.exports = { submitCode, runCode };
