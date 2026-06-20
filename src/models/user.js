@@ -30,15 +30,19 @@ const userSchema = new Schema({
         enum: ["user", "admin"],
         default: "user"
     },
-    problemSolved: {
-        type: [String]
-    },
+    problemSolved: [
+        {
+            type: Schema.Types.ObjectId,
+            ref: 'problems'
+        }
+    ],
+
     password: {
         type: String,
         required: true
     }
-},{
-    timestamps:true
+}, {
+    timestamps: true
 });
 
 
