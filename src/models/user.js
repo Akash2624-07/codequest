@@ -45,6 +45,11 @@ const userSchema = new Schema({
     timestamps: true
 });
 
+userSchema.post('findOneAndDelete', async function (userInfo) {
+    if (userInfo) {
+      await mongoose.model('submissions').deleteMany({ userId: userInfo._id });
+    }
+});
 
 const User = mongoose.model("users", userSchema);
 module.exports = User;

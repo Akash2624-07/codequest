@@ -101,4 +101,31 @@ const adminRegister = async (req, res) => {
     }
 }
 
-module.exports = { register, login, logout, adminRegister };
+const deleteProfile = async (req, res) => {
+
+    try {
+        const userId = req.result._id;
+        const { token } = req.cookies;
+
+        const payload = jwt.decode(token, process.env.JWT_SECRET_KEY);
+
+        await User.findByIdAndDelete(userId);
+        
+        // Add token to RedisDB
+        await redisClient.set(`token:${token}`, `Blocked`);
+        // Set TTL
+        await redisClient.expireAt(`token:${token}`, payload.exp);
+
+        // Clear cookies
+        res.clearCookie("token");
+
+
+        res.status(200).send("Profile Deleted Successfully");
+    }
+    catch (err) {
+        res.status(500).send("Error: " + err.message);
+    }
+
+}
+
+module.exports = { register, login, logout, adminRegister, deleteProfile };
