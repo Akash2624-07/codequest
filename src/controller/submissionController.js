@@ -1,7 +1,10 @@
 const Problem = require('../models/problem');
 const Submission = require('../models/submission');
 const { getLanguageId, submitBatch, getSubmissionResults } = require('../utils/judge0');
+
+
 const decode = (str) => str ? Buffer.from(str, 'base64').toString('utf-8') : null;
+
 const submitCode = async (req, res) => {
     try {
         const userId = req.result._id;
@@ -159,4 +162,37 @@ const runCode = async (req, res) => {
     }
 }
 
-module.exports = { submitCode, runCode };
+const getSubmissions = async (req, res) => {
+
+    try {
+        const userId = req.result._id;
+        const problemId = req.params.id;
+
+        const submissions = await Submission.find({ userId, problemId });
+
+        res.status(200).send(submissions);
+
+    }
+    catch (err) {
+        res.status(500).send("Error: " + err.message);
+    }
+}
+
+const getAllSubmissions = async (req, res) => {
+
+    try {
+
+        const userId = req.result._id;
+
+        const submissions = await Submission.find({ userId });
+
+        res.status(200).send(submissions);
+
+    }
+    catch (err) {
+        res.status(500).send("Error: " + err.message);
+    }
+}
+
+
+module.exports = { submitCode, runCode, getSubmissions, getAllSubmissions };
