@@ -100,6 +100,15 @@ const submitCode = async (req, res) => {
         submittedResult.failedCase = failedCase;
 
         await submittedResult.save();
+
+        if (status === "accepted") {
+            const alreadySolved = req.result.problemSolved.some(id => id.toString() === problemId);
+            if (!alreadySolved) {
+                req.result.problemSolved.push(problemId);
+                await req.result.save();
+            }
+        }
+
         res.status(201).send(submittedResult);
 
     } catch (err) {
