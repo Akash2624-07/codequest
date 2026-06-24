@@ -1,5 +1,5 @@
 const express = require('express');
-const {register, login, logout, adminRegister, deleteProfile} = require('../controller/userController');
+const { register, login, logout, adminRegister, deleteProfile, getProfile } = require('../controller/userController');
 const userMiddleware = require('../middleware/userMiddleware');
 const adminMiddleware = require('../middleware/adminMiddleware');
 
@@ -19,6 +19,9 @@ authRouter.delete("/profile", userMiddleware, deleteProfile);
 
 // Admin register
 authRouter.post("/admin/register", adminMiddleware, adminRegister);
+
+// Authentication or Get Profile
+authRouter.get("/me", userMiddleware, getProfile);
 
 module.exports = authRouter;
 
