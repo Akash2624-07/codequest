@@ -20,10 +20,20 @@ const register = async (req, res) => {
         const token = jwt.sign({ _id: user._id, emailId: user.emailId, role: user.role }, process.env.JWT_SECRET_KEY, { expiresIn: 60 * 60 });
 
         res.cookie('token', token, { maxAge: 60 * 60 * 1000, httpOnly: true });
-        res.status(201).send("User Created Successfully");
+
+        return res.status(201).json({
+            message:"User login successful",
+            userinfo:{
+                _id:user._id,
+                firstName:user.firstName,
+                lastName:user.lastName,
+                emailId:user.emailId,
+                role:user.role,
+            }
+        })
     }
     catch (err) {
-        res.status(400).send("Error: " + err.message);
+        res.status(400).json({ message: err.message })
     }
 
 }
@@ -33,27 +43,37 @@ const login = async (req, res) => {
 
         const { emailId, password } = req.body;
 
-        if (!emailId)
-            throw new Error("Invalid Credentials");
-        if (!password)
-            throw new Error("Invalid Credentials");
+        if (!emailId || !password){
+            return res.status(400).send("Invalid Credentials");
+        }
 
         const user = await User.findOne({ emailId });
 
-        if (!user)
-            throw new Error("Invalid Credentials");
+        if (!user){
+            return res.status(401).send("Invalid Credentials");
+        }
 
         const isMatch = await bcrypt.compare(password, user.password);
-        if (!isMatch)
-            throw new Error("Invalid Credentials");
+        if (!isMatch){
+            return res.status(401).send("Invalid Credentials");
+        }
 
         const token = jwt.sign({ _id: user._id, emailId: user.emailId, role: user.role }, process.env.JWT_SECRET_KEY, { expiresIn: 60 * 60 });
 
         res.cookie('token', token, { maxAge: 60 * 60 * 1000, httpOnly: true });
-        res.status(200).send("Logged in Successfully");
+        return res.status(200).json({
+            message:"User login successful",
+            userinfo:{
+                _id:user._id,
+                firstName:user.firstName,
+                lastName:user.lastName,
+                emailId:user.emailId,
+                role:user.role,
+            }
+        })
     }
     catch (err) {
-        res.status(401).send("Error: " + err.message);
+        res.status(500).send("Error: " + err.message);
     }
 }
 
@@ -75,7 +95,7 @@ const logout = async (req, res) => {
 
     }
     catch (err) {
-        res.status(500).send("Error: " + err);
+        res.status(400).json({ message: err.message })
     }
 }
 
