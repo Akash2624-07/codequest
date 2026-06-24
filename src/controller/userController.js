@@ -22,13 +22,13 @@ const register = async (req, res) => {
         res.cookie('token', token, { maxAge: 60 * 60 * 1000, httpOnly: true });
 
         return res.status(201).json({
-            message:"User login successful",
-            userinfo:{
-                _id:user._id,
-                firstName:user.firstName,
-                lastName:user.lastName,
-                emailId:user.emailId,
-                role:user.role,
+            message: "User login successful",
+            userinfo: {
+                _id: user._id,
+                firstName: user.firstName,
+                lastName: user.lastName,
+                emailId: user.emailId,
+                role: user.role,
             }
         })
     }
@@ -43,18 +43,18 @@ const login = async (req, res) => {
 
         const { emailId, password } = req.body;
 
-        if (!emailId || !password){
+        if (!emailId || !password) {
             return res.status(400).send("Invalid Credentials");
         }
 
         const user = await User.findOne({ emailId });
 
-        if (!user){
+        if (!user) {
             return res.status(401).send("Invalid Credentials");
         }
 
         const isMatch = await bcrypt.compare(password, user.password);
-        if (!isMatch){
+        if (!isMatch) {
             return res.status(401).send("Invalid Credentials");
         }
 
@@ -62,13 +62,13 @@ const login = async (req, res) => {
 
         res.cookie('token', token, { maxAge: 60 * 60 * 1000, httpOnly: true });
         return res.status(200).json({
-            message:"User login successful",
-            userinfo:{
-                _id:user._id,
-                firstName:user.firstName,
-                lastName:user.lastName,
-                emailId:user.emailId,
-                role:user.role,
+            message: "User login successful",
+            userinfo: {
+                _id: user._id,
+                firstName: user.firstName,
+                lastName: user.lastName,
+                emailId: user.emailId,
+                role: user.role,
             }
         })
     }
@@ -130,7 +130,7 @@ const deleteProfile = async (req, res) => {
         const payload = jwt.decode(token, process.env.JWT_SECRET_KEY);
 
         await User.findByIdAndDelete(userId);
-        
+
         // Add token to RedisDB
         await redisClient.set(`token:${token}`, `Blocked`);
         // Set TTL
@@ -148,4 +148,23 @@ const deleteProfile = async (req, res) => {
 
 }
 
-module.exports = { register, login, logout, adminRegister, deleteProfile };
+const getProfile = (req, res) => {
+
+    const { _id, firstName, lastName, emailId, role } = req.result;
+
+    const userInfo = {
+        _id,
+        firstName,
+        lastName,
+        emailId,
+        role,
+    }
+
+    return res.status(200).json({
+        message: "User validated",
+        userInfo,
+    })
+
+}
+
+module.exports = { register, login, logout, adminRegister, deleteProfile, getProfile };
