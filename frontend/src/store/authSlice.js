@@ -6,9 +6,14 @@ export const registerUser = createAsyncThunk(
   async (userData, { rejectWithValue }) => {
     try {
       const { data } = await frontendClient.post('/user/register', userData);
+
+      if (!data.userInfo)
+        return rejectWithValue('Invalid response');
+
       return data.userInfo;
-    } catch (err) {
-      return rejectWithValue(err);
+    }
+    catch (err) {
+      return rejectWithValue(err.response?.data?.message || err.message || 'Something went wrong');
     }
   },
 );
@@ -18,9 +23,14 @@ export const loginUser = createAsyncThunk(
   async (userData, { rejectWithValue }) => {
     try {
       const { data } = await frontendClient.post('/user/login', userData);
+
+      if (!data.userInfo)
+        return rejectWithValue('Invalid response');
+
       return data.userInfo;
-    } catch (err) {
-      return rejectWithValue(err);
+    }
+    catch (err) {
+      return rejectWithValue(err.response?.data?.message || err.message || 'Something went wrong');
     }
   },
 );
@@ -30,9 +40,14 @@ export const checkAuth = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       const { data } = await frontendClient.get('/user/me');
+
+      if (!data.userInfo)
+        return rejectWithValue('Invalid response');
+
       return data.userInfo;
-    } catch (err) {
-      return rejectWithValue(err);
+    }
+    catch (err) {
+      return rejectWithValue(err.response?.data?.message || err.message || 'Something went wrong');
     }
   },
 );
@@ -43,8 +58,9 @@ export const logoutUser = createAsyncThunk(
     try {
       await frontendClient.post('/user/logout');
       return null;
-    } catch (err) {
-      return rejectWithValue(err);
+    }
+    catch (err) {
+      return rejectWithValue(err.response?.data?.message || err.message || 'Something went wrong');
     }
   },
 );
