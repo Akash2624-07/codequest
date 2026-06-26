@@ -23,7 +23,7 @@ const register = async (req, res) => {
 
         return res.status(201).json({
             message: "User login successful",
-            userinfo: {
+            userInfo: {
                 _id: user._id,
                 firstName: user.firstName,
                 lastName: user.lastName,
@@ -63,7 +63,7 @@ const login = async (req, res) => {
         res.cookie('token', token, { maxAge: 60 * 60 * 1000, httpOnly: true });
         return res.status(200).json({
             message: "User login successful",
-            userinfo: {
+            userInfo: {
                 _id: user._id,
                 firstName: user.firstName,
                 lastName: user.lastName,
