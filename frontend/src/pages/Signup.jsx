@@ -1,23 +1,37 @@
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Link } from 'react-router';
+import { useDispatch, useSelector } from 'react-redux';
+import { Link, useNavigate } from 'react-router';
+import { registerUser } from '../store/authSlice';
+import { signupSchema } from '../schemas/authSchemas';
+import { useEffect } from 'react';
 
 // ── Schema ────────────────────────────────────────────────────────────────────
 // Defined outside the component so it isn't recreated on every render
-import { signupSchema } from '../schemas/authSchemas';
 
 // ── Component ─────────────────────────────────────────────────────────────────
 function Signup() {
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const { isAuthenticated, loading, error } = useSelector(
+    (state) => state.auth,
+  );
+
   const {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
   } = useForm({ resolver: zodResolver(signupSchema) });
 
-  const onSubmit = (data) => {
-    // TODO: replace with API call once Axios is set up
-    console.log(data);
+  const onSubmit = async (data) => {
+    await dispatch(registerUser(data));
   };
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate('/');
+    }
+  },[isAuthenticated]);
 
   return (
     <div className="min-h-screen bg-base-200 flex items-center justify-center px-4">
