@@ -1,5 +1,6 @@
 const express = require('express');
 const cookieParser = require('cookie-parser')
+const cors = require('cors');
 require('dotenv').config();
 const Main = require('./config/database');
 const redisClient = require('./config/redis');
@@ -8,6 +9,12 @@ const problemRouter = require('./routes/problem');
 const submitRouter = require('./routes/submit');
 
 const app = express();
+
+app.use(cors({
+    origin: 'http://localhost:5173',
+    credentials: true
+}));
+
 app.use(express.json());
 app.use(cookieParser());
 
@@ -21,7 +28,7 @@ async function startServer() {
 
     try {
         // Try to connect to both Databases at once
-        await Promise.all([Main(),redisClient.connect()]);
+        await Promise.all([Main(), redisClient.connect()]);
         console.log("Connected to DB successfully.");
 
         app.listen(process.env.PORT || 3000, () => {
