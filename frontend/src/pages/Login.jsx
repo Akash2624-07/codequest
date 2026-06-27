@@ -2,9 +2,10 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Link, useNavigate } from 'react-router';
 import { useDispatch, useSelector } from 'react-redux';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { loginSchema } from '../schemas/authSchemas';
 import { loginUser } from '../store/authSlice';
+import { Eye, EyeOff } from 'lucide-react';
 
 // ── Schema ────────────────────────────────────────────────────────────────────
 // Defined outside the component so it isn't recreated on every render
@@ -16,6 +17,8 @@ function Login() {
   const { isAuthenticated, loading, error } = useSelector(
     (state) => state.auth,
   );
+
+  const [showPassword, setShowPassword] = useState(false);
 
   const {
     register,
@@ -67,12 +70,23 @@ function Login() {
             {/* Password */}
             <fieldset className="fieldset">
               <legend className="fieldset-legend">Password</legend>
-              <input
-                {...register('password')}
-                type="password"
-                placeholder="Min. 8 characters"
-                className={`input input-bordered w-full ${errors.password ? 'input-error' : ''}`}
-              />
+              <div className="relative">
+                <input
+                  {...register('password')}
+                  type={showPassword ? 'text' : 'password'}
+                  placeholder="Min. 8 characters"
+                  className={`input input-bordered w-full pr-10 ${errors.password ? 'input-error' : ''}`}
+                />
+
+                <button
+                  type="button"
+                  className="absolute top-1/2 right-3 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                  onClick={() => setShowPassword(!showPassword)}
+                  aria-label={showPassword ? 'Hide password' : 'Show password'}
+                >
+                  {showPassword ? <Eye /> : <EyeOff />}
+                </button>
+              </div>
               {errors.password && (
                 <p className="fieldset-label text-error">
                   {errors.password.message}
