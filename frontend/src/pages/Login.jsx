@@ -40,12 +40,6 @@ function Login() {
           {/* Header */}
           <div className="text-center mb-2">
             <h1 className="text-2xl font-bold">Welcome back</h1>
-            <p className="text-base-content/60 text-sm mt-1">
-              Dont have one?{' '}
-              <Link to="/signup" className="link link-primary">
-                Sign up
-              </Link>
-            </p>
           </div>
 
           {/* Form */}
@@ -98,6 +92,14 @@ function Login() {
                 'Sign in'
               )}
             </button>
+            <div className="text-center mb-2">
+              <p className="text-base-content/60 text-sm mt-1">
+                Don't have one?{' '}
+                <Link to="/signup" className="link link-primary">
+                  Sign up
+                </Link>
+              </p>
+            </div>
           </form>
         </div>
       </div>

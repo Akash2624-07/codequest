@@ -31,7 +31,7 @@ function Signup() {
     if (isAuthenticated) {
       navigate('/');
     }
-  },[isAuthenticated]);
+  }, [isAuthenticated]);
 
   return (
     <div className="min-h-screen bg-base-200 flex items-center justify-center px-4">
@@ -40,12 +40,6 @@ function Signup() {
           {/* Header */}
           <div className="text-center mb-2">
             <h1 className="text-2xl font-bold">Create an account</h1>
-            <p className="text-base-content/60 text-sm mt-1">
-              Already have one?{' '}
-              <Link to="/login" className="link link-primary">
-                Sign in
-              </Link>
-            </p>
           </div>
 
           {/* Form */}
@@ -114,6 +108,14 @@ function Signup() {
                 'Sign Up'
               )}
             </button>
+            <div className="text-center mb-2">
+              <p className="text-base-content/60 text-sm mt-1">
+                Already have one?{' '}
+                <Link to="/login" className="link link-primary">
+                  Sign in
+                </Link>
+              </p>
+            </div>
           </form>
         </div>
       </div>
