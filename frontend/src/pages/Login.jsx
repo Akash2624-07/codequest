@@ -45,6 +45,12 @@ function Login() {
             <h1 className="text-2xl font-bold">Welcome back</h1>
           </div>
 
+          {error && (
+            <div role="alert" className="alert alert-error text-sm py-2">
+              <span>{error}</span>
+            </div>
+          )}
+
           {/* Form */}
           <form
             onSubmit={handleSubmit(onSubmit)}

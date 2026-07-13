@@ -45,6 +45,12 @@ function Signup() {
             <h1 className="text-2xl font-bold">Create an account</h1>
           </div>
 
+          {error && (
+            <div role="alert" className="alert alert-error text-sm py-2">
+              <span>{error}</span>
+            </div>
+          )}
+
           {/* Form */}
           <form
             onSubmit={handleSubmit(onSubmit)}

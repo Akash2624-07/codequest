@@ -44,18 +44,18 @@ const login = async (req, res) => {
         const { emailId, password } = req.body;
 
         if (!emailId || !password) {
-            return res.status(400).send("Invalid Credentials");
+            return res.status(400).json({ message: "Invalid Credentials" });
         }
 
         const user = await User.findOne({ emailId });
 
         if (!user) {
-            return res.status(401).send("Invalid Credentials");
+            return res.status(401).json({ message: "Invalid Credentials" });
         }
 
         const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) {
-            return res.status(401).send("Invalid Credentials");
+            return res.status(401).json({ message: "Invalid Credentials" });
         }
 
         const token = jwt.sign({ _id: user._id, emailId: user.emailId, role: user.role }, process.env.JWT_SECRET_KEY, { expiresIn: 60 * 60 });
@@ -73,7 +73,7 @@ const login = async (req, res) => {
         })
     }
     catch (err) {
-        res.status(500).send("Error: " + err.message);
+        res.status(500).json({ message: err.message });
     }
 }
 
@@ -114,10 +114,10 @@ const adminRegister = async (req, res) => {
         const token = jwt.sign({ _id: user._id, emailId: user.emailId, role: user.role }, process.env.JWT_SECRET_KEY, { expiresIn: 60 * 60 });
 
         res.cookie('token', token, { maxAge: 60 * 60 * 1000, httpOnly: true });
-        res.status(201).send("Admin Created Successfully");
+        res.status(201).json({ message: "Admin Created Successfully" });
     }
     catch (err) {
-        res.status(400).send("Error: " + err.message);
+        res.status(400).json({ message: err.message });
     }
 }
 
