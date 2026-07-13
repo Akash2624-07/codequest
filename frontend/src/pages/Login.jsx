@@ -14,9 +14,7 @@ import { Eye, EyeOff } from 'lucide-react';
 function Login() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const { isAuthenticated, loading, error } = useSelector(
-    (state) => state.auth,
-  );
+  const { isAuthenticated, error } = useSelector((state) => state.auth);
 
   const [showPassword, setShowPassword] = useState(false);
 
@@ -108,9 +106,9 @@ function Login() {
             <button
               type="submit"
               className="btn btn-primary w-full mt-2"
-              disabled={isSubmitting || loading}
+              disabled={isSubmitting}
             >
-              {isSubmitting || loading ? (
+              {isSubmitting ? (
                 <span className="loading loading-spinner loading-sm" />
               ) : (
                 'Sign in'

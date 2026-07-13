@@ -87,17 +87,17 @@ const authSlice = createSlice({
   extraReducers: (builder) => {
     builder
       // Register User Cases
+      // NOTE: does not touch state.loading — App.jsx gates the whole route
+      // tree on that flag for the initial checkAuth() call, and flipping it
+      // here would unmount Login/Signup mid-submit.
       .addCase(registerUser.pending, (state) => {
-        state.loading = true;
         state.error = null;
       })
       .addCase(registerUser.fulfilled, (state, action) => {
-        state.loading = false;
         state.isAuthenticated = true;
         state.user = action.payload;
       })
       .addCase(registerUser.rejected, (state, action) => {
-        state.loading = false;
         state.error = action.payload || 'Something went wrong';
         state.isAuthenticated = false;
         state.user = null;
@@ -105,16 +105,13 @@ const authSlice = createSlice({
 
       // Login User Cases
       .addCase(loginUser.pending, (state) => {
-        state.loading = true;
         state.error = null;
       })
       .addCase(loginUser.fulfilled, (state, action) => {
-        state.loading = false;
         state.isAuthenticated = true;
         state.user = action.payload;
       })
       .addCase(loginUser.rejected, (state, action) => {
-        state.loading = false;
         state.error = action.payload || 'Something went wrong';
         state.isAuthenticated = false;
         state.user = null;
@@ -139,17 +136,14 @@ const authSlice = createSlice({
 
       // Logout User Cases
       .addCase(logoutUser.pending, (state) => {
-        state.loading = true;
         state.error = null;
       })
       .addCase(logoutUser.fulfilled, (state) => {
-        state.loading = false;
         state.user = null;
         state.isAuthenticated = false;
         state.error = null;
       })
       .addCase(logoutUser.rejected, (state, action) => {
-        state.loading = false;
         state.error = action.payload || 'Something went wrong';
         state.isAuthenticated = false;
         state.user = null;
