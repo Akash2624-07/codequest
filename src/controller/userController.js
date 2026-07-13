@@ -33,6 +33,9 @@ const register = async (req, res) => {
         })
     }
     catch (err) {
+        if (err.code === 11000) {
+            return res.status(409).json({ message: "An account with this email already exists" });
+        }
         res.status(400).json({ message: err.message })
     }
 
@@ -117,6 +120,9 @@ const adminRegister = async (req, res) => {
         res.status(201).json({ message: "Admin Created Successfully" });
     }
     catch (err) {
+        if (err.code === 11000) {
+            return res.status(409).json({ message: "An account with this email already exists" });
+        }
         res.status(400).json({ message: err.message });
     }
 }

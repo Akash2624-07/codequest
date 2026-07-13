@@ -4,7 +4,7 @@ import { Link, useNavigate } from 'react-router';
 import { useDispatch, useSelector } from 'react-redux';
 import { useEffect, useState } from 'react';
 import { loginSchema } from '../schemas/authSchemas';
-import { loginUser } from '../store/authSlice';
+import { loginUser, clearAuthError } from '../store/authSlice';
 import { Eye, EyeOff } from 'lucide-react';
 
 // ── Schema ────────────────────────────────────────────────────────────────────
@@ -35,6 +35,10 @@ function Login() {
       navigate('/');
     }
   }, [isAuthenticated]);
+
+  useEffect(() => {
+    dispatch(clearAuthError());
+  }, []);
 
   return (
     <div className="min-h-screen bg-base-200 flex items-center justify-center px-4">
@@ -104,9 +108,9 @@ function Login() {
             <button
               type="submit"
               className="btn btn-primary w-full mt-2"
-              disabled={isSubmitting}
+              disabled={isSubmitting || loading}
             >
-              {isSubmitting ? (
+              {isSubmitting || loading ? (
                 <span className="loading loading-spinner loading-sm" />
               ) : (
                 'Sign in'

@@ -2,7 +2,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useDispatch, useSelector } from 'react-redux';
 import { Link, useNavigate } from 'react-router';
-import { registerUser } from '../store/authSlice';
+import { registerUser, clearAuthError } from '../store/authSlice';
 import { signupSchema } from '../schemas/authSchemas';
 import { useEffect, useState } from 'react';
 import { Eye, EyeOff } from 'lucide-react';
@@ -35,6 +35,10 @@ function Signup() {
       navigate('/');
     }
   }, [isAuthenticated]);
+
+  useEffect(() => {
+    dispatch(clearAuthError());
+  }, []);
 
   return (
     <div className="min-h-screen bg-base-200 flex items-center justify-center px-4">
@@ -120,9 +124,9 @@ function Signup() {
             <button
               type="submit"
               className="btn btn-primary w-full mt-2"
-              disabled={isSubmitting}
+              disabled={isSubmitting || loading}
             >
-              {isSubmitting ? (
+              {isSubmitting || loading ? (
                 <span className="loading loading-spinner loading-sm" />
               ) : (
                 'Sign Up'
