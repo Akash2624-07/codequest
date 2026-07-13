@@ -12,7 +12,7 @@ const validate = (data)=>{
         throw new Error ("Invalid Email");
 
     if(!validator.isStrongPassword(data.password))
-        throw new Error("Weak Password");
+        throw new Error("Password must be at least 8 characters and include an uppercase letter, a lowercase letter, a number, and a symbol");
 }
 
 module.exports = validate;
