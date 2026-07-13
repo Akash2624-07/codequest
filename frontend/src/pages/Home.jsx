@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { Link } from 'react-router';
-import { CheckCircle2 } from 'lucide-react';
+import { CheckCircle2, Minus, Search } from 'lucide-react';
 import frontendClient from '../utils/axiosInstance';
 import DifficultyBadge from '../components/DifficultyBadge';
 import FilterBar from '../components/FilterBar';
@@ -21,6 +21,7 @@ function Home() {
   const [difficulty, setDifficulty] = useState('all');
   const [status, setStatus] = useState('all');
   const [selectedTags, setSelectedTags] = useState(new Set());
+  const [search, setSearch] = useState('');
 
   useEffect(() => {
     const fetchAll = async () => {
@@ -72,14 +73,16 @@ function Home() {
   );
 
   const filtered = useMemo(() => {
+    const q = search.trim().toLowerCase();
     return problems.filter((p) => {
       if (difficulty !== 'all' && p.difficulty !== difficulty) return false;
       if (status === 'solved' && !solvedIds.has(p._id)) return false;
       if (status === 'unsolved' && solvedIds.has(p._id)) return false;
       if (selectedTags.size > 0 && !p.tags.some((t) => selectedTags.has(t))) return false;
+      if (q && !p.title.toLowerCase().includes(q)) return false;
       return true;
     });
-  }, [problems, solvedIds, difficulty, status, selectedTags]);
+  }, [problems, solvedIds, difficulty, status, selectedTags, search]);
 
   if (loading) {
     return (
@@ -106,6 +109,17 @@ function Home() {
         </p>
       </div>
 
+      <label className="input bg-base-200 max-w-105 mb-6">
+        <Search size={16} className="text-base-content/50" />
+        <input
+          type="search"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder="Search problems..."
+          aria-label="Search problems"
+        />
+      </label>
+
       <FilterBar
         difficulty={difficulty}
         setDifficulty={setDifficulty}
@@ -124,7 +138,7 @@ function Home() {
               <th>Title</th>
               <th>Tags</th>
               <th>Difficulty</th>
-              <th className="w-16 text-center">Status</th>
+              <th className="w-32">Status</th>
             </tr>
           </thead>
           <tbody>
@@ -160,9 +174,17 @@ function Home() {
                   <td>
                     <DifficultyBadge difficulty={problem.difficulty} />
                   </td>
-                  <td className="text-center">
-                    {solvedIds.has(problem._id) && (
-                      <CheckCircle2 size={18} className="text-success inline" />
+                  <td>
+                    {solvedIds.has(problem._id) ? (
+                      <span className="inline-flex items-center gap-1.5 text-sm font-medium text-success">
+                        <CheckCircle2 size={15} />
+                        Solved
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center gap-1.5 text-sm text-base-content/50">
+                        <Minus size={15} />
+                        Unsolved
+                      </span>
                     )}
                   </td>
                 </tr>
