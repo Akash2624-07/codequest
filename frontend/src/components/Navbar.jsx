@@ -37,8 +37,8 @@ function Navbar() {
             role="button"
             className="btn btn-ghost btn-circle avatar placeholder"
           >
-            <div className="bg-primary text-primary-content rounded-full w-9">
-              <span className="text-sm font-bold">{initial}</span>
+            <div className="bg-primary text-primary-content rounded-full w-9 h-9 flex items-center justify-center">
+              <span className="text-sm font-bold leading-none">{initial}</span>
             </div>
           </div>
 
