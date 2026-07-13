@@ -1,5 +1,44 @@
 @import 'tailwindcss';
 @plugin "daisyui";
+@plugin "daisyui/theme" {
+  name: "codequest";
+  default: true;
+  prefersdark: true;
+  color-scheme: dark;
+
+  --color-base-100: #0B0C12;
+  --color-base-200: #12131C;
+  --color-base-300: #1B1C29;
+  --color-base-content: #F5F6FA;
+  --color-primary: #6C5CE7;
+  --color-primary-content: #FFFFFF;
+  --color-secondary: #8B7CF6;
+  --color-secondary-content: #FFFFFF;
+  --color-accent: #A78BFA;
+  --color-accent-content: #1B1030;
+  --color-neutral: #12131C;
+  --color-neutral-content: #F5F6FA;
+  --color-info: #38BDF8;
+  --color-info-content: #04283A;
+  --color-success: #34D399;
+  --color-success-content: #04241A;
+  --color-warning: #FBBF24;
+  --color-warning-content: #3A2A00;
+  --color-error: #FB7185;
+  --color-error-content: #3A0A14;
+
+  --radius-selector: 1rem;
+  --radius-field: 0.5rem;
+  --radius-box: 1rem;
+
+  --size-selector: 0.25rem;
+  --size-field: 0.25rem;
+
+  --border: 1px;
+
+  --depth: 0;
+  --noise: 0;
+}
 
 input:-webkit-autofill,
 input:-webkit-autofill:hover,
