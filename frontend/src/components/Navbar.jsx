@@ -1,6 +1,6 @@
 import { useDispatch, useSelector } from 'react-redux';
 import { Link, useNavigate } from 'react-router';
-import { Code2, LogOut, PlusCircle } from 'lucide-react';
+import { Code2, LogOut, PlusCircle, Users } from 'lucide-react';
 import { logoutUser } from '../store/authSlice';
 
 function Navbar() {
@@ -51,12 +51,20 @@ function Navbar() {
             </li>
             <div className="divider my-0" />
             {user?.role === 'admin' && (
-              <li>
-                <Link to="/admin/create" className="flex items-center gap-2">
-                  <PlusCircle size={15} />
-                  New Problem
-                </Link>
-              </li>
+              <>
+                <li>
+                  <Link to="/admin/create" className="flex items-center gap-2">
+                    <PlusCircle size={15} />
+                    New Problem
+                  </Link>
+                </li>
+                <li>
+                  <Link to="/admin/users" className="flex items-center gap-2">
+                    <Users size={15} />
+                    Manage Users
+                  </Link>
+                </li>
+              </>
             )}
             <li>
               <button
