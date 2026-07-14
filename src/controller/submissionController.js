@@ -12,11 +12,11 @@ const submitCode = async (req, res) => {
         const { code, language } = req.body;
 
         if (!problemId || !code || !language)
-            return res.status(400).send("Some fields are missing");
+            return res.status(400).json({ message: "Some fields are missing" });
 
         const problem = await Problem.findById(problemId);
         if (!problem)
-            return res.status(404).send("Problem not found");
+            return res.status(404).json({ message: "Problem not found" });
 
         const { visibleTestCase, hiddenTestCase } = problem;
         const totalTestCases = [...visibleTestCase, ...hiddenTestCase];
@@ -112,10 +112,10 @@ const submitCode = async (req, res) => {
             }
         }
 
-        res.status(201).send(submittedResult);
+        res.status(201).json(submittedResult);
 
     } catch (err) {
-        res.status(500).send("Internal Server Error " + err);
+        res.status(500).json({ message: "Internal Server Error: " + err.message });
     }
 }
 
@@ -126,11 +126,11 @@ const runCode = async (req, res) => {
         const { code, language } = req.body;
 
         if (!problemId || !code || !language)
-            return res.status(400).send("Some fields are missing");
+            return res.status(400).json({ message: "Some fields are missing" });
 
         const problem = await Problem.findById(problemId);
         if (!problem)
-            return res.status(404).send("Problem not found");
+            return res.status(404).json({ message: "Problem not found" });
 
         const { visibleTestCase } = problem;
 
@@ -155,10 +155,10 @@ const runCode = async (req, res) => {
             errorMessage: decode(results[index].stderr) ?? decode(results[index].compile_output) ?? decode(results[index].message) ?? null
         }));
 
-        res.status(200).send(output);
+        res.status(200).json(output);
 
     } catch (err) {
-        res.status(500).send("Internal Server Error " + err);
+        res.status(500).json({ message: "Internal Server Error: " + err.message });
     }
 }
 
@@ -170,11 +170,11 @@ const getSubmissions = async (req, res) => {
 
         const submissions = await Submission.find({ userId, problemId });
 
-        res.status(200).send(submissions);
+        res.status(200).json(submissions);
 
     }
     catch (err) {
-        res.status(500).send("Error: " + err.message);
+        res.status(500).json({ message: "Error: " + err.message });
     }
 }
 
@@ -186,11 +186,11 @@ const getAllSubmissions = async (req, res) => {
 
         const submissions = await Submission.find({ userId });
 
-        res.status(200).send(submissions);
+        res.status(200).json(submissions);
 
     }
     catch (err) {
-        res.status(500).send("Error: " + err.message);
+        res.status(500).json({ message: "Error: " + err.message });
     }
 }
 
