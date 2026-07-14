@@ -111,13 +111,21 @@ const adminRegister = async (req, res) => {
         const hashedPassword = await bcrypt.hash(password, 12);
 
         // Create Admin data
+        // NOTE: no token/cookie issued here — this account is created by an
+        // already-logged-in admin, so we must not touch their session cookie.
         const user = await User.create({ ...req.body, password: hashedPassword, role: "admin" });
 
-        // Generate JWT token
-        const token = jwt.sign({ _id: user._id, emailId: user.emailId, role: user.role }, process.env.JWT_SECRET_KEY, { expiresIn: 60 * 60 });
-
-        res.cookie('token', token, { maxAge: 60 * 60 * 1000, httpOnly: true });
-        res.status(201).json({ message: "Admin Created Successfully" });
+        res.status(201).json({
+            message: "Admin created successfully",
+            user: {
+                _id: user._id,
+                firstName: user.firstName,
+                lastName: user.lastName,
+                emailId: user.emailId,
+                role: user.role,
+                createdAt: user.createdAt,
+            },
+        });
     }
     catch (err) {
         if (err.code === 11000) {
@@ -173,4 +181,80 @@ const getProfile = (req, res) => {
 
 }
 
-module.exports = { register, login, logout, adminRegister, deleteProfile, getProfile };
+const getAllUsers = async (req, res) => {
+
+    try {
+        const limit = Math.max(1, Math.min(parseInt(req.query.limit) || 20, 50));
+        const cursor = req.query.cursor;
+
+        const query = cursor
+            ? { _id: { $gt: cursor } }
+            : {};
+
+        const users = await User.find(query)
+            .limit(limit)
+            .sort({ _id: 1 })
+            .select('_id firstName lastName emailId role createdAt');
+
+        const nextCursor = users.length === limit
+            ? users[users.length - 1]._id
+            : null;
+
+        res.status(200).json({
+            users,
+            nextCursor,
+            hasMore: nextCursor !== null
+        });
+    }
+    catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+}
+
+const updateUserRole = async (req, res) => {
+    const { id } = req.params;
+    const { role } = req.body;
+
+    try {
+        if (!['user', 'admin'].includes(role))
+            return res.status(400).json({ message: "Role must be 'user' or 'admin'" });
+
+        if (id === req.result._id.toString())
+            return res.status(400).json({ message: "You cannot change your own role" });
+
+        const user = await User.findByIdAndUpdate(
+            id,
+            { role },
+            { runValidators: true, new: true }
+        ).select('_id firstName lastName emailId role createdAt');
+
+        if (!user)
+            return res.status(404).json({ message: "User not found" });
+
+        res.status(200).json({ message: "Role updated successfully", user });
+    }
+    catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+}
+
+const deleteUser = async (req, res) => {
+    const { id } = req.params;
+
+    try {
+        if (id === req.result._id.toString())
+            return res.status(400).json({ message: "You cannot delete your own account from here" });
+
+        const user = await User.findByIdAndDelete(id);
+
+        if (!user)
+            return res.status(404).json({ message: "User not found" });
+
+        res.status(200).json({ message: "User deleted successfully" });
+    }
+    catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+}
+
+module.exports = { register, login, logout, adminRegister, deleteProfile, getProfile, getAllUsers, updateUserRole, deleteUser };

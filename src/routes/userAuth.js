@@ -1,5 +1,5 @@
 const express = require('express');
-const { register, login, logout, adminRegister, deleteProfile, getProfile } = require('../controller/userController');
+const { register, login, logout, adminRegister, deleteProfile, getProfile, getAllUsers, updateUserRole, deleteUser } = require('../controller/userController');
 const userMiddleware = require('../middleware/userMiddleware');
 const adminMiddleware = require('../middleware/adminMiddleware');
 
@@ -19,6 +19,15 @@ authRouter.delete("/profile", userMiddleware, deleteProfile);
 
 // Admin register
 authRouter.post("/admin/register", adminMiddleware, adminRegister);
+
+// Admin: list all users
+authRouter.get("/admin/users", adminMiddleware, getAllUsers);
+
+// Admin: update a user's role
+authRouter.patch("/admin/users/:id/role", adminMiddleware, updateUserRole);
+
+// Admin: delete a user
+authRouter.delete("/admin/users/:id", adminMiddleware, deleteUser);
 
 // Authentication or Get Profile
 authRouter.get("/me", userMiddleware, getProfile);
