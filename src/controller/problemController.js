@@ -131,8 +131,13 @@ const getProblemById = async (req, res) => {
         if (!id)
             return res.status(400).send("Missing ID FIeld");
 
-        const problem = await Problem.findById(id)
-            .select('-hiddenTestCase -referenceSolution -problemCreator');
+        // Admins get the full document (needed to prefill the edit form);
+        // everyone else gets the player-safe view with answers stripped.
+        const query = Problem.findById(id);
+        if (req.result.role !== 'admin')
+            query.select('-hiddenTestCase -referenceSolution -problemCreator');
+
+        const problem = await query;
 
         if (!problem)
             return res.status(404).send("Problem Not Found");
