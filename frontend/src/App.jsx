@@ -14,6 +14,7 @@ import ProblemPage from './pages/ProblemPage';
 import AdminUsers from './pages/AdminUsers';
 import AdminProblems from './pages/AdminProblems';
 import EditProblem from './pages/EditProblem';
+import AdminUserSubmissions from './pages/AdminUserSubmissions';
 
 function App() {
   const dispatch = useDispatch();
@@ -62,6 +63,7 @@ function App() {
             <Route path="users" element={<AdminUsers />} />
           </Route>
           <Route path="/admin/problems/:id/edit" element={<EditProblem />} />
+          <Route path="/admin/users/:id/submissions" element={<AdminUserSubmissions />} />
         </Route>
       </Route>
     </Routes>

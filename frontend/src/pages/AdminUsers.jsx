@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
+import { Link } from 'react-router';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { ShieldCheck, Shield, Trash2, UserPlus } from 'lucide-react';
+import { ShieldCheck, Shield, Trash2, UserPlus, FileText } from 'lucide-react';
 import frontendClient from '../utils/axiosInstance';
 import { formatDateParts } from '../utils/formatDate';
 import { signupSchema } from '../schemas/authSchemas';
@@ -203,7 +204,7 @@ function AdminUsers() {
               <th>Email</th>
               <th>Role</th>
               <th>Joined</th>
-              <th className="w-32"></th>
+              <th className="w-40"></th>
             </tr>
           </thead>
           <tbody>
@@ -225,6 +226,14 @@ function AdminUsers() {
                   <td className="text-base-content/50 text-sm">{formatDateParts(u.createdAt).date}</td>
                   <td>
                     <div className="flex justify-end gap-1">
+                      <Link
+                        to={`/admin/users/${u._id}/submissions`}
+                        state={{ user: u }}
+                        className="btn btn-ghost btn-xs"
+                        title="View submissions"
+                      >
+                        <FileText size={14} />
+                      </Link>
                       <button
                         className="btn btn-ghost btn-xs"
                         title={u.role === 'admin' ? 'Demote to user' : 'Promote to admin'}
