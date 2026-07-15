@@ -195,4 +195,22 @@ const getAllSubmissions = async (req, res) => {
 }
 
 
-module.exports = { submitCode, runCode, getSubmissions, getAllSubmissions };
+const getSubmissionsForUser = async (req, res) => {
+
+    try {
+        const { userId } = req.params;
+
+        const submissions = await Submission.find({ userId })
+            .populate('problemId', 'title difficulty')
+            .populate('userId', 'firstName lastName emailId')
+            .sort({ createdAt: -1 });
+
+        res.status(200).json(submissions);
+
+    }
+    catch (err) {
+        res.status(500).json({ message: "Error: " + err.message });
+    }
+}
+
+module.exports = { submitCode, runCode, getSubmissions, getAllSubmissions, getSubmissionsForUser };
