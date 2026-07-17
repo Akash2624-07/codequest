@@ -6,6 +6,7 @@ import { useEffect, useState } from 'react';
 import { loginSchema } from '../schemas/authSchemas';
 import { loginUser, clearAuthError } from '../store/authSlice';
 import { Eye, EyeOff } from 'lucide-react';
+import ResendVerificationForm from '../components/ResendVerificationForm';
 
 // ── Schema ────────────────────────────────────────────────────────────────────
 // Defined outside the component so it isn't recreated on every render
@@ -27,6 +28,8 @@ function Login() {
   const onSubmit = async (data) => {
     await dispatch(loginUser(data));
   };
+
+  const isUnverifiedError = error?.toLowerCase().includes('not verified');
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -50,6 +53,13 @@ function Login() {
           {error && (
             <div role="alert" className="alert alert-error text-sm py-2">
               <span>{error}</span>
+            </div>
+          )}
+
+          {isUnverifiedError && (
+            <div className="text-left">
+              <p className="text-sm text-base-content/50 mb-1">Resend the verification link:</p>
+              <ResendVerificationForm />
             </div>
           )}
 
