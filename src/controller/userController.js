@@ -63,9 +63,13 @@ const login = async (req, res) => {
             return res.status(401).json({ message: "Invalid Credentials" });
         }
 
-        const isMatch = await bcrypt.compare(password, user.password);
+        const isMatch = await bcrypt.compare(password, user?.password);
         if (!isMatch) {
             return res.status(401).json({ message: "Invalid Credentials" });
+        }
+        
+        if(!user?.isVerified){
+            return res.status(403).json({message:"You are not verified yet. Please click the link below to receive a verification link."});
         }
 
         const token = jwt.sign({ _id: user._id, emailId: user.emailId, role: user.role }, process.env.JWT_SECRET_KEY, { expiresIn: 60 * 60 });
