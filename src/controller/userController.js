@@ -3,6 +3,8 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const validate = require('../utils/validator');
 const redisClient = require('../config/redis');
+const sendVerificationEmail = require('../utils/mailer');
+const { generateToken, verifyToken, deleteToken } = require('../services/authServices');
 
 const register = async (req, res) => {
 
@@ -16,13 +18,18 @@ const register = async (req, res) => {
         // Create User data
         const user = await User.create({ ...req.body, password: hashedPassword, role: "user" });
 
-        // Generate JWT token
-        const token = jwt.sign({ _id: user._id, emailId: user.emailId, role: user.role }, process.env.JWT_SECRET_KEY, { expiresIn: 60 * 60 });
-
-        res.cookie('token', token, { maxAge: 60 * 60 * 1000, httpOnly: true });
+        // Generate Verification Token and send mail
+        try{
+            const token = await generateToken(user._id);
+            await sendVerificationEmail(user.emailId, token);
+        }
+        catch(err){
+            await User.findByIdAndDelete(user._id);
+            return res.status(500).json({ message: "Failed to send verification email. Please try again." });
+        }
 
         return res.status(201).json({
-            message: "User login successful",
+            message: "Verification link succesfully sent",
             userInfo: {
                 _id: user._id,
                 firstName: user.firstName,
