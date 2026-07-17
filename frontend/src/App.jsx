@@ -9,6 +9,7 @@ import AdminLayout from './components/AdminLayout';
 import Home from './pages/Home';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
+import VerifyEmail from './pages/VerifyEmail';
 import CreateProblem from './pages/CreateProblem';
 import ProblemPage from './pages/ProblemPage';
 import AdminUsers from './pages/AdminUsers';
@@ -43,6 +44,7 @@ function App() {
         path="/signup"
         element={isAuthenticated ? <Navigate to="/" /> : <Signup />}
       />
+      <Route path="/verify" element={<VerifyEmail />} />
 
       {/* Navbar wraps everything inside here */}
       <Route element={<Layout />}>
