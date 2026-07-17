@@ -93,14 +93,13 @@ const authSlice = createSlice({
       .addCase(registerUser.pending, (state) => {
         state.error = null;
       })
-      .addCase(registerUser.fulfilled, (state, action) => {
-        state.isAuthenticated = true;
-        state.user = action.payload;
+      // Registration no longer logs the user in — the account isn't
+      // verified yet, so the backend doesn't issue a session cookie here.
+      .addCase(registerUser.fulfilled, (state) => {
+        state.error = null;
       })
       .addCase(registerUser.rejected, (state, action) => {
         state.error = action.payload || 'Something went wrong';
-        state.isAuthenticated = false;
-        state.user = null;
       })
 
       // Login User Cases
@@ -127,7 +126,7 @@ const authSlice = createSlice({
         state.isAuthenticated = true;
         state.user = action.payload;
       })
-      .addCase(checkAuth.rejected, (state, action) => {
+      .addCase(checkAuth.rejected, (state) => {
         state.loading = false;
         state.isAuthenticated = false;
         state.user = null;
