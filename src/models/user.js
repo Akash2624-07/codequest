@@ -20,6 +20,10 @@ const userSchema = new Schema({
         lowercase: true,
         immutable: true
     },
+    isVerified:{
+        type:Boolean,
+        default:false,
+    },
     age: {
         type: Number,
         min: 6,
