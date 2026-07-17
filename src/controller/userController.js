@@ -268,4 +268,53 @@ const deleteUser = async (req, res) => {
     }
 }
 
-module.exports = { register, login, logout, adminRegister, deleteProfile, getProfile, getAllUsers, updateUserRole, deleteUser };
+const verifyUser = async (req, res) => {
+
+    try{
+        const token = req.query.token;
+        const userId = await verifyToken(token);
+
+        const user = await User.findByIdAndUpdate(userId,{isVerified:true});
+        await deleteToken(userId);
+
+        res.status(200).json({ message : "User Verified Succesfully" });
+    }
+    catch(err){
+        res.status(400).json({ message: err.message })
+    }
+}
+
+const resendVerificationEmail = async (req, res) => {
+
+    try{
+        
+        const { emailId } = req.body;
+        if (!emailId) {
+            return res.status(400).json({ message: "Enter your e-mail and try again!" });
+        }
+        // Find User
+        const user = await User.findOne({ emailId });
+        
+        if(!user){
+            return res.status(404).json({message:"No account found with this email"});
+        }
+
+        if(user.isVerified){
+            return res.status(400).json({message:"This account is already verified. Please login."});
+        }
+
+        // Remove any pre-existing verification token
+        await deleteToken(user._id);
+
+        // Generate another verification token and send mail
+        const token = await generateToken(user._id);
+        await sendVerificationEmail(emailId, token);
+
+        res.status(200).json({message:"Verification link has been sent again"});
+
+    }catch(err){
+        res.status(400).json({ message: err.message })
+    }
+}
+
+module.exports = { register, login, logout, adminRegister, deleteProfile, getProfile, getAllUsers, updateUserRole, deleteUser, verifyUser, resendVerificationEmail };
