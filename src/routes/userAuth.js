@@ -1,5 +1,5 @@
 const express = require('express');
-const { register, login, logout, adminRegister, deleteProfile, getProfile, getAllUsers, updateUserRole, deleteUser } = require('../controller/userController');
+const { register, login, logout, adminRegister, deleteProfile, getProfile, getAllUsers, updateUserRole, deleteUser, verifyUser, resendVerificationEmail } = require('../controller/userController');
 const userMiddleware = require('../middleware/userMiddleware');
 const adminMiddleware = require('../middleware/adminMiddleware');
 
@@ -31,6 +31,12 @@ authRouter.delete("/admin/users/:id", adminMiddleware, deleteUser);
 
 // Authentication or Get Profile
 authRouter.get("/me", userMiddleware, getProfile);
+
+// Verify email of an user
+authRouter.get("/verify", verifyUser);
+
+// Resend verification email
+authRouter.post("/resend-verification", resendVerificationEmail);
 
 module.exports = authRouter;
 
