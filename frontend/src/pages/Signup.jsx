@@ -6,6 +6,7 @@ import { registerUser, clearAuthError } from '../store/authSlice';
 import { signupSchema } from '../schemas/authSchemas';
 import { useEffect, useState } from 'react';
 import { Eye, EyeOff } from 'lucide-react';
+import ResendVerificationForm from '../components/ResendVerificationForm';
 
 // ── Schema ────────────────────────────────────────────────────────────────────
 // Defined outside the component so it isn't recreated on every render
@@ -17,6 +18,7 @@ function Signup() {
   const { isAuthenticated, error } = useSelector((state) => state.auth);
 
   const [showPassword, setShowPassword] = useState(false);
+  const [registeredEmail, setRegisteredEmail] = useState(null);
 
   const {
     register,
@@ -25,7 +27,10 @@ function Signup() {
   } = useForm({ resolver: zodResolver(signupSchema) });
 
   const onSubmit = async (data) => {
-    await dispatch(registerUser(data));
+    const result = await dispatch(registerUser(data));
+    if (registerUser.fulfilled.match(result)) {
+      setRegisteredEmail(data.emailId);
+    }
   };
 
   useEffect(() => {
@@ -37,6 +42,29 @@ function Signup() {
   useEffect(() => {
     dispatch(clearAuthError());
   }, []);
+
+  if (registeredEmail) {
+    return (
+      <div className="min-h-screen bg-base-200 flex items-center justify-center px-4">
+        <div className="card bg-base-100 w-full max-w-md shadow-xl">
+          <div className="card-body gap-4 items-center text-center">
+            <h1 className="text-2xl font-bold">Check your email</h1>
+            <p className="text-base-content/60">
+              We sent a verification link to <span className="font-medium">{registeredEmail}</span>. Click it to
+              activate your account (expires in 10 minutes).
+            </p>
+            <div className="w-full text-left">
+              <p className="text-sm text-base-content/50 mb-1">Didn't get it?</p>
+              <ResendVerificationForm defaultEmail={registeredEmail} />
+            </div>
+            <Link to="/login" className="link link-primary text-sm mt-2">
+              Back to login
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-base-200 flex items-center justify-center px-4">
