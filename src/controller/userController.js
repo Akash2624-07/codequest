@@ -12,11 +12,13 @@ const register = async (req, res) => {
         // Validate the data
         validate(req.body);
 
-        const { password } = req.body;
+        const { firstName, lastName, emailId, password, age } = req.body;
         const hashedPassword = await bcrypt.hash(password, 12);
 
         // Create User data
-        const user = await User.create({ ...req.body, password: hashedPassword, role: "user" });
+        // NOTE: fields taken individually, not spread from req.body — isVerified
+        // and role must never be settable by the client here.
+        const user = await User.create({ firstName, lastName, emailId, age, password: hashedPassword, role: "user" });
 
         // Generate Verification Token and send mail
         try{
