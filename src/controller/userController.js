@@ -99,10 +99,9 @@ const logout = async (req, res) => {
         const { token } = req.cookies;
         const payload = jwt.decode(token, process.env.JWT_SECRET_KEY);
 
-        // Add token to RedisDB
-        await redisClient.set(`token:${token}`, `Blocked`);
-        // Set TTL
-        await redisClient.expireAt(`token:${token}`, payload.exp)
+        // Add token to RedisDB with its TTL set in the same round trip
+        // (EXAT expects a Unix-seconds timestamp, same as the JWT's exp claim).
+        await redisClient.set(`token:${token}`, `Blocked`, { EXAT: payload.exp });
 
         // Clear cookies
         // res.cookie("token", null, {expires: new Date(Date.now())});
@@ -156,12 +155,12 @@ const deleteProfile = async (req, res) => {
 
         const payload = jwt.decode(token, process.env.JWT_SECRET_KEY);
 
-        await User.findByIdAndDelete(userId);
-
-        // Add token to RedisDB
-        await redisClient.set(`token:${token}`, `Blocked`);
-        // Set TTL
-        await redisClient.expireAt(`token:${token}`, payload.exp);
+        // Deleting the user and blocklisting their token are independent
+        // writes to two different stores — run them concurrently.
+        await Promise.all([
+            User.findByIdAndDelete(userId),
+            redisClient.set(`token:${token}`, `Blocked`, { EXAT: payload.exp })
+        ]);
 
         // Clear cookies
         res.clearCookie("token");
