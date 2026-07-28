@@ -21,15 +21,16 @@ const userMiddleware = async (req, res, next) => {
         // if(!_id)  --> redundant, if id doesnt exist then jwt.verify will throw error
         //     throw new Error("Invalid token");
 
-        // Check in redisDB first to avoid unnecessary DB hit
-        const isBlocked = await redisClient.exists(`token:${token}`);
+        // Redis blocklist check and the user lookup don't depend on each
+        // other, so run them concurrently instead of round-tripping twice.
+        const [isBlocked, user] = await Promise.all([
+            redisClient.exists(`token:${token}`),
+            Users.findById(_id)
+        ]);
 
         // if it does, throw an error
         if (isBlocked)
             throw new Error("Invalid token");
-
-        // Find user corresponding to _id
-        const user = await Users.findById(_id);
 
         // If no such user exist
         if (!user)
