@@ -21,15 +21,6 @@ const submitCode = async (req, res) => {
         const { visibleTestCase, hiddenTestCase } = problem;
         const totalTestCases = [...visibleTestCase, ...hiddenTestCase];
 
-        const submittedResult = await Submission.create({
-            userId,
-            problemId,
-            code,
-            language,
-            status: "pending",
-            totalTestCases: totalTestCases.length
-        });
-
         // Make submissions object to send to Judge0
         const languageId = getLanguageId(language);
         const submissions = totalTestCases.map(({ input, output }) => ({
@@ -39,8 +30,19 @@ const submitCode = async (req, res) => {
             expected_output: output,
         }));
 
-        // Submit to Judge0
-        const tokenObjects = await submitBatch(submissions);
+        // The pending-submission write doesn't depend on the Judge0 call
+        // (or vice versa), so run them concurrently.
+        const [submittedResult, tokenObjects] = await Promise.all([
+            Submission.create({
+                userId,
+                problemId,
+                code,
+                language,
+                status: "pending",
+                totalTestCases: totalTestCases.length
+            }),
+            submitBatch(submissions)
+        ]);
         const results = await getSubmissionResults(tokenObjects);
 
 
