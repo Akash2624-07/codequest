@@ -18,7 +18,9 @@ const createProblem = async (req, res) => {
         const totalTestCases = [...visibleTestCase, ...hiddenTestCase];
 
         // referenceSolution : [{}, {}, {}];
-        for (const { language, completeCode } of referenceSolution) {
+        // Each language's Judge0 verification is independent of the others,
+        // so run them concurrently instead of one language at a time.
+        const verifications = await Promise.all(referenceSolution.map(async ({ language, completeCode }) => {
             const languageId = getLanguageId(language);
 
             const submissions = totalTestCases.map(({ input, output }) => ({
@@ -34,10 +36,13 @@ const createProblem = async (req, res) => {
 
             // Judge 0 status id 3 = Accepted
             const failedCase = results.find(r => r.status.id !== 3);
-            if (failedCase) {
-                return res.status(400).send(`Reference solution for ${language} failed: ${failedCase.status.description}`);
-            }
-        };
+            return failedCase ? { language, failedCase } : null;
+        }));
+
+        const failed = verifications.find(v => v !== null);
+        if (failed) {
+            return res.status(400).send(`Reference solution for ${failed.language} failed: ${failed.failedCase.status.description}`);
+        }
 
         // All solutions validated, safe to save
         const problem = await Problem.create({ ...req.body, problemCreator: req.result._id });
@@ -73,7 +78,7 @@ const updateProblem = async (req, res) => {
 
         const totalTestCases = [...visibleTestCase, ...hiddenTestCase];
 
-        for (const { language, completeCode } of referenceSolution) {
+        const verifications = await Promise.all(referenceSolution.map(async ({ language, completeCode }) => {
             const languageId = getLanguageId(language);
 
             const submissions = totalTestCases.map(({ input, output }) => ({
@@ -88,10 +93,13 @@ const updateProblem = async (req, res) => {
             const results = await getSubmissionResults(tokenObjects);
 
             const failedCase = results.find(r => r.status.id !== 3);
-            if (failedCase) {
-                return res.status(400).send(`Reference solution for ${language} failed: ${failedCase.status.description}`);
-            }
-        };
+            return failedCase ? { language, failedCase } : null;
+        }));
+
+        const failed = verifications.find(v => v !== null);
+        if (failed) {
+            return res.status(400).send(`Reference solution for ${failed.language} failed: ${failed.failedCase.status.description}`);
+        }
 
         // All solutions validated, safe to save
         const newProblem = await Problem.findByIdAndUpdate(id, { ...req.body, problemCreator: req.result._id }, { runValidators: true, new: true });
