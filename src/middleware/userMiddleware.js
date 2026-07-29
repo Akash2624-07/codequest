@@ -36,7 +36,7 @@ const userMiddleware = async (req, res, next) => {
         if (!user)
             throw new Error("User doesnt exist");
 
-        req.result = user;
+        req.user = user;
         next();
 
     }

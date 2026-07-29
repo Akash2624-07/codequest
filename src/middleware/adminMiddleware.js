@@ -37,7 +37,7 @@ const adminMiddleware = async (req, res, next) => {
             throw new Error("User doesnt exist");
 
 
-        req.result = user;
+        req.user = user;
         next();
 
     }

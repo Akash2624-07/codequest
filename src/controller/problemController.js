@@ -45,7 +45,7 @@ const createProblem = async (req, res) => {
         }
 
         // All solutions validated, safe to save
-        const problem = await Problem.create({ ...req.body, problemCreator: req.result._id });
+        const problem = await Problem.create({ ...req.body, problemCreator: req.user._id });
 
         res.status(201).json({ message: "Problem created successfully", problem });
 
@@ -102,7 +102,7 @@ const updateProblem = async (req, res) => {
         }
 
         // All solutions validated, safe to save
-        const newProblem = await Problem.findByIdAndUpdate(id, { ...req.body, problemCreator: req.result._id }, { runValidators: true, new: true });
+        const newProblem = await Problem.findByIdAndUpdate(id, { ...req.body, problemCreator: req.user._id }, { runValidators: true, new: true });
 
         res.status(200).json({ message: "Problem updated successfully", newProblem });
     }
@@ -142,7 +142,7 @@ const getProblemById = async (req, res) => {
         // Admins get the full document (needed to prefill the edit form);
         // everyone else gets the player-safe view with answers stripped.
         const query = Problem.findById(id);
-        if (req.result.role !== 'admin')
+        if (req.user.role !== 'admin')
             query.select('-hiddenTestCase -referenceSolution -problemCreator');
 
         const problem = await query;
@@ -192,12 +192,12 @@ const solvedProblemsbyUser = async (req, res) => {
 
     try {
 
-        await req.result.populate({
+        await req.user.populate({
             path: "problemSolved",
             select: "_id title tags difficulty"
         });
 
-        res.status(200).send(req.result.problemSolved);
+        res.status(200).send(req.user.problemSolved);
 
     }
     catch (err) {

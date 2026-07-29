@@ -150,7 +150,7 @@ const adminRegister = async (req, res) => {
 const deleteProfile = async (req, res) => {
 
     try {
-        const userId = req.result._id;
+        const userId = req.user._id;
         const { token } = req.cookies;
 
         const payload = jwt.decode(token, process.env.JWT_SECRET_KEY);
@@ -176,7 +176,7 @@ const deleteProfile = async (req, res) => {
 
 const getProfile = (req, res) => {
 
-    const { _id, firstName, lastName, emailId, role } = req.result;
+    const { _id, firstName, lastName, emailId, role } = req.user;
 
     const userInfo = {
         _id,
@@ -231,7 +231,7 @@ const updateUserRole = async (req, res) => {
         if (!['user', 'admin'].includes(role))
             return res.status(400).json({ message: "Role must be 'user' or 'admin'" });
 
-        if (id === req.result._id.toString())
+        if (id === req.user._id.toString())
             return res.status(400).json({ message: "You cannot change your own role" });
 
         const user = await User.findByIdAndUpdate(
@@ -254,7 +254,7 @@ const deleteUser = async (req, res) => {
     const { id } = req.params;
 
     try {
-        if (id === req.result._id.toString())
+        if (id === req.user._id.toString())
             return res.status(400).json({ message: "You cannot delete your own account from here" });
 
         const user = await User.findByIdAndDelete(id);
