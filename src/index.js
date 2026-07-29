@@ -7,6 +7,7 @@ const redisClient = require('./config/redis');
 const authRouter = require('./routes/userAuth');
 const problemRouter = require('./routes/problem');
 const submitRouter = require('./routes/submit');
+const errorHandler = require('./middleware/errorHandler');
 
 const app = express();
 
@@ -21,6 +22,10 @@ app.use(cookieParser());
 app.use("/user", authRouter);
 app.use("/problems", problemRouter);
 app.use("/problems", submitRouter);
+
+// Central error handler — must be registered last, after all routes, so
+// errors thrown/rejected in any handler above land here.
+app.use(errorHandler);
 
 
 
