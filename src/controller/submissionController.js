@@ -7,7 +7,7 @@ const decode = (str) => str ? Buffer.from(str, 'base64').toString('utf-8') : nul
 
 const submitCode = async (req, res) => {
     try {
-        const userId = req.result._id;
+        const userId = req.user._id;
         const problemId = req.params.id;
         const { code, language } = req.body;
 
@@ -107,10 +107,10 @@ const submitCode = async (req, res) => {
         await submittedResult.save();
 
         if (status === "accepted") {
-            const alreadySolved = req.result.problemSolved.some(id => id.toString() === problemId);
+            const alreadySolved = req.user.problemSolved.some(id => id.toString() === problemId);
             if (!alreadySolved) {
-                req.result.problemSolved.push(problemId);
-                await req.result.save();
+                req.user.problemSolved.push(problemId);
+                await req.user.save();
             }
         }
 
@@ -167,7 +167,7 @@ const runCode = async (req, res) => {
 const getSubmissions = async (req, res) => {
 
     try {
-        const userId = req.result._id;
+        const userId = req.user._id;
         const problemId = req.params.id;
 
         const submissions = await Submission.find({ userId, problemId });
@@ -184,7 +184,7 @@ const getAllSubmissions = async (req, res) => {
 
     try {
 
-        const userId = req.result._id;
+        const userId = req.user._id;
 
         const submissions = await Submission.find({ userId });
 
