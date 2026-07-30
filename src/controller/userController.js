@@ -24,7 +24,14 @@ const register = async (req, res) => {
         await sendVerificationEmail(user.emailId, token);
     }
     catch (err) {
-        await User.findByIdAndDelete(user._id);
+        // Roll back BOTH sides. generateToken may have already written the
+        // verify:token / verify:user pair to Redis, and those would otherwise
+        // outlive the user for the full 10-minute TTL — leaving a token that
+        // still resolves to a now-deleted account.
+        await Promise.all([
+            User.findByIdAndDelete(user._id),
+            deleteToken(user._id)
+        ]);
         throw new AppError(500, "Failed to send verification email. Please try again.");
     }
 
@@ -215,8 +222,14 @@ const verifyUser = async (req, res) => {
     if (!userId)
         throw new AppError(400, "Invalid or expired token");
 
-    await User.findByIdAndUpdate(userId, { isVerified: true });
+    // A token can outlive its user (rollback, admin deletion), so a token that
+    // resolves is not proof the account still exists — without this check the
+    // request would report success for a user that isn't there.
+    const user = await User.findByIdAndUpdate(userId, { isVerified: true });
     await deleteToken(userId);
+
+    if (!user)
+        throw new AppError(400, "Invalid or expired token");
 
     res.status(200).json({ message: "User verified successfully" });
 }
