@@ -24,7 +24,10 @@ const registerSchema = z.object({
         .max(20, 'Last name must be at most 20 characters')
         .optional(),
     emailId: z.string().email('Enter a valid email address'),
-    age: z.number().int().min(6).max(100).optional(),
+    // Coerced, not strict: an HTML number input posts "18", not 18, and
+    // Mongoose used to cast that silently. The .min(6) below still rejects the
+    // degenerate coercions ("" and null both become 0, true becomes 1).
+    age: z.coerce.number().int().min(6).max(100).optional(),
     password: passwordSchema,
 });
 
