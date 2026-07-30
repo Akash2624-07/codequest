@@ -29,7 +29,7 @@ const register = async (req, res) => {
     }
 
     return res.status(201).json({
-        message: "Verification link succesfully sent",
+        message: "Verification link successfully sent",
         userInfo: {
             _id: user._id,
             firstName: user.firstName,
@@ -218,7 +218,7 @@ const verifyUser = async (req, res) => {
     await User.findByIdAndUpdate(userId, { isVerified: true });
     await deleteToken(userId);
 
-    res.status(200).json({ message: "User Verified Succesfully" });
+    res.status(200).json({ message: "User verified successfully" });
 }
 
 const resendVerificationEmail = async (req, res) => {
