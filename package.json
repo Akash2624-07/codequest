@@ -1,8 +1,13 @@
 {
   "name": "codequest",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "Backend API for CodeQuest, an online judge where users solve programming problems and run or submit solutions in five languages against hidden test cases via Judge0. Express 5 + MongoDB + Redis, with JWT auth, email verification, and admin problem management.",
+  "main": "src/index.js",
+  "private": true,
+  "type": "commonjs",
+  "engines": {
+    "node": ">=20"
+  },
   "scripts": {
     "start": "node src/index.js",
     "dev": "nodemon src/index.js"
@@ -11,10 +16,18 @@
     "type": "git",
     "url": "git+https://github.com/Akash2624-07/codequest.git"
   },
-  "keywords": [],
-  "author": "",
+  "keywords": [
+    "online-judge",
+    "competitive-programming",
+    "code-execution",
+    "judge0",
+    "express",
+    "mongodb",
+    "redis",
+    "jwt-auth"
+  ],
+  "author": "Akash Harshvardhan (https://github.com/Akash2624-07)",
   "license": "ISC",
-  "type": "commonjs",
   "bugs": {
     "url": "https://github.com/Akash2624-07/codequest/issues"
   },
