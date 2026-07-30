@@ -15,12 +15,9 @@ async function generateToken(userId){
 
 async function verifyToken(token){
 
+    // Returns the userId string, or null if the token is missing/expired —
+    // the caller decides how to surface that (verifyUser maps null to a 400).
     const userId = await redisClient.get(`verify:token:${token}`);
-
-    if(!userId){
-        throw new Error("Invalid or expired token");
-    }
-    // userId is already a string
 
     return userId;
 
