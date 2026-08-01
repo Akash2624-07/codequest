@@ -10,7 +10,9 @@
   },
   "scripts": {
     "start": "node src/index.js",
-    "dev": "nodemon src/index.js"
+    "dev": "nodemon src/index.js",
+    "test": "vitest run --coverage",
+    "test:watch": "vitest"
   },
   "repository": {
     "type": "git",
@@ -47,6 +49,13 @@
     "zod": "^4.4.3"
   },
   "allowScripts": {
-    "bcrypt": false
+    "bcrypt": false,
+    "mongodb-memory-server": true
+  },
+  "devDependencies": {
+    "@vitest/coverage-v8": "^4.1.10",
+    "mongodb-memory-server": "^11.2.0",
+    "supertest": "^7.2.2",
+    "vitest": "^4.1.10"
   }
 }
