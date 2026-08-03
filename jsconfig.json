@@ -1,0 +1,8 @@
+{
+  "compilerOptions": {
+    "checkJs": false,
+    "types": ["vitest/globals"]
+  },
+  "include": ["src/**/*.js", "tests/**/*.js"],
+  "exclude": ["node_modules", "frontend", "coverage", "dist"]
+}
