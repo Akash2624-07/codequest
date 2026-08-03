@@ -15,6 +15,12 @@ if (process.env.DB_CONNECT_URI) {
   throw new Error('DB_CONNECT_URI is set — refusing to run tests against a real database.');
 }
 
+// Install the external-service doubles at module scope, not in a hook. The
+// mailer double works by seeding require.cache, so it has to be in place before
+// any test file requires src/app and pulls the real module in transitively.
+const { installFakes, resetFakes } = require('./helpers/fakes');
+installFakes();
+
 let mongod;
 
 
@@ -33,6 +39,10 @@ afterEach(async () => {
   await Promise.all(
     Object.values(collections).map((c) => c.deleteMany({}))   // wipe data, keep structure
   )
+
+  // The doubles hold state too — a captured email or a leftover verify: key
+  // would leak into the next test exactly like an uncleared collection would.
+  resetFakes()
 })
 
 afterAll(async () => {
