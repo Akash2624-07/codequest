@@ -1,0 +1,71 @@
+name: test
+
+# Runs on every pull request, and on main after a merge. A feature branch gets
+# its first run when you open the PR — which is the gate that matters, since
+# that is what blocks the merge. To also cover pushes to unmerged branches, add:
+#   push:
+#     branches: ['**']
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+# A second push to the same branch cancels the run still in flight for it.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    env:
+      # Park the mongod binary OUTSIDE node_modules.
+      #
+      # mongodb-memory-server defaults to node_modules/.cache/mongodb-memory-server,
+      # which cannot survive between runs: `npm ci` deletes node_modules wholesale
+      # before installing, so a cache restored beforehand is wiped, and one
+      # restored afterwards arrives too late — the postinstall hook has already
+      # run and re-downloaded. Somewhere outside node_modules sidesteps both.
+      MONGOMS_DOWNLOAD_DIR: ${{ github.workspace }}/.cache/mongodb-binaries
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          # The floor declared in package.json engines (">=20"), deliberately not
+          # the version used locally. Testing on the oldest supported runtime is
+          # what catches an accidental dependency on a newer Node API.
+          #
+          # Resolves to the latest 20.x, which matters: mongoose and
+          # mongodb-memory-server both declare engines ">=20.19.0", so a literal
+          # 20.0 would be below their floor even though it satisfies ours.
+          node-version: 20
+          cache: npm
+
+      # Must come before `npm ci`: the package's postinstall hook downloads the
+      # binary, and a warm cache turns that download into a no-op. Without this
+      # step CI still passes — it just re-fetches ~200MB every run.
+      - name: Cache mongod binary
+        uses: actions/cache@v4
+        with:
+          path: ${{ github.workspace }}/.cache/mongodb-binaries
+          # Keyed on the lockfile so bumping mongodb-memory-server (and with it
+          # the default mongod version) invalidates the cache. restore-keys lets
+          # a stale entry still be reused: any missing version is downloaded
+          # into the same directory rather than starting from empty.
+          key: mongod-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
+          restore-keys: mongod-${{ runner.os }}-
+
+      # `npm ci`, not `npm install`: it requires package-lock.json, installs
+      # exactly what the lockfile pins, deletes node_modules first, and fails
+      # outright if package.json and the lockfile disagree. `npm install` would
+      # happily resolve new versions and rewrite the lockfile, which makes a CI
+      # run non-reproducible.
+      - run: npm ci
+
+      # The postinstall above is what keeps this honest: it pulls the mongod
+      # binary during install, so the download can never happen inside a test
+      # hook and run into Vitest's 10s hookTimeout.
+      - run: npm test
