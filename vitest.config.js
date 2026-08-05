@@ -6,5 +6,10 @@ export default defineConfig({
         environment: 'node',
         include: ['tests/**/*.test.js'],
         setupFiles: ['tests/setup.js'],
+        coverage: {
+            // Measure src/ only. Without this the report includes the suite's own
+            // helpers, padding the denominator with code that isn't the subject.
+            include: ['src/**/*.js'],
+        },
     }
 });
