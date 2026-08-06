@@ -23,9 +23,9 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          # engines floor, not the version used locally. Resolves to the latest
-          # 20.x — mongoose and mongodb-memory-server both need >=20.19.0.
-          node-version: 20
+          # engines floor, not the version used locally, so an accidental
+          # dependency on a newer API fails here. Node 20 went EOL 2026-04-30.
+          node-version: 22
           cache: npm
 
       # Before npm ci, whose postinstall hook does the download.
