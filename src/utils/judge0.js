@@ -22,14 +22,20 @@ const getLanguageId = (language) => {
 
 // Judge0 Client (Self-Hosted Instance)
 const judge0Client = axios.create({
-    baseURL: process.env.JUDGE0_BASE_URL,
     // axios defaults to no timeout, so without this a stalled Judge0 holds the
-    // request open until the browser or a proxy gives up.
-    timeout: 15000,
-    headers: {
-        "X-Auth-Token": process.env.JUDGE0_AUTH_TOKEN,
-        "Content-Type": "application/json"
-    }
+    // request open until the browser or a proxy gives up. Kept well under the
+    // poll budgets below so one hung call cannot consume the whole budget.
+    timeout: 10000,
+    headers: { "Content-Type": "application/json" }
+});
+
+// Read env per request, not at module load: captured at module scope these
+// would be fixed to whatever process.env held the first time this file was
+// required, which is the same trap config/redis.js falls into.
+judge0Client.interceptors.request.use((config) => {
+    config.baseURL = process.env.JUDGE0_BASE_URL;
+    config.headers['X-Auth-Token'] = process.env.JUDGE0_AUTH_TOKEN;
+    return config;
 });
 
 // Judge0 is upstream, so its failures are gateway errors — neither our bug nor
@@ -52,13 +58,27 @@ judge0Client.interceptors.response.use(
     }
 );
 
-// Submit batch of test cases, get back tokens 
+// Submit batch of test cases, get back tokens
 const submitBatch = async (submissions) => {
     const response = await judge0Client.post(
         "/submissions/batch?base64_encoded=false",
         { submissions }
     );
-    return response.data; // [{ token: "abc..." }, { token: "def..." }, ...]
+
+    // A partially accepted batch comes back with error objects in place of some
+    // tokens. Left unchecked those become the string "undefined" in the polling
+    // query, which Judge0 answers for the tokens it does recognise — so the
+    // results silently misalign with the test cases they are indexed against.
+    const tokens = response.data;
+    const usable = Array.isArray(tokens)
+        && tokens.length === submissions.length
+        && tokens.every(t => t?.token);
+
+    if (!usable) {
+        throw new AppError(502, 'Code execution service did not accept every submission.');
+    }
+
+    return tokens; // [{ token: "abc..." }, { token: "def..." }, ...]
 }
 
 const sleep = (ms)=> new Promise(resolve => setTimeout(resolve,ms));
