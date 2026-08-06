@@ -75,8 +75,9 @@ describe('getSubmissionResults', () => {
         await expect(getSubmissionResults([{ token: 'a' }], 400))
             .rejects.toMatchObject({ name: 'AppError', statusCode: 504 });
 
-        // Gives up on its own budget, not the 20s default.
-        expect(Date.now() - startedAt).toBeLessThan(2000);
+        // Loose on purpose: the claim is "used its own 400ms budget, not the 20s
+        // default", and 5000 separates those without flaking on a slow runner.
+        expect(Date.now() - startedAt).toBeLessThan(5000);
     });
 });
 
