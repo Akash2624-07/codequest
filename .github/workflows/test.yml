@@ -1,0 +1,41 @@
+name: test
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    env:
+      # Outside node_modules on purpose: `npm ci` deletes node_modules, so the
+      # package's default cache location cannot survive between runs.
+      MONGOMS_DOWNLOAD_DIR: ${{ github.workspace }}/.cache/mongodb-binaries
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          # engines floor, not the version used locally, so an accidental
+          # dependency on a newer API fails here. Node 20 went EOL 2026-04-30.
+          node-version: 22
+          cache: npm
+
+      # Before npm ci, whose postinstall hook does the download.
+      - name: Cache mongod binary
+        uses: actions/cache@v4
+        with:
+          path: ${{ github.workspace }}/.cache/mongodb-binaries
+          key: mongod-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
+          restore-keys: mongod-${{ runner.os }}-
+
+      - run: npm ci
+
+      - run: npm test
