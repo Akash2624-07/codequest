@@ -1,6 +1,5 @@
-// Must run before any require below. config/redis.js builds its client at
-// module scope, so it reads process.env the moment it is required — load the
-// env after that and the client permanently captures `undefined`.
+// Must run before the requires below: config/redis.js reads process.env at
+// module scope, so a later dotenv leaves it holding undefined forever.
 require('dotenv').config();
 
 const app = require('./app');

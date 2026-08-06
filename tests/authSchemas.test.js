@@ -1,9 +1,5 @@
-// Test A — no DB, no HTTP. Pure validation logic.
-//
-// Regression test for 708cffa. An HTML number input posts the string "25", not
-// the number 25, and Mongoose used to cast that silently — which meant garbage
-// like "" or true could also slip through as 0 and 1. z.coerce.number() moves
-// the conversion into validation, where it is explicit and assertable.
+// Regression test for 708cffa: an HTML number input posts "25", not 25, and
+// Mongoose used to cast it silently.
 
 const { registerSchema } = require('../src/schemas/authSchemas');
 
@@ -20,6 +16,6 @@ describe('registerSchema', () => {
 
         expect(result.success).toBe(true);
         expect(result.data.age).toBe(25);
-        expect(typeof result.data.age).toBe('number');   // the actual regression
+        expect(typeof result.data.age).toBe('number');
     });
 });

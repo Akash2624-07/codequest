@@ -1,12 +1,5 @@
-// Proves the doubles in tests/helpers/fakes.js are the objects the *app code*
-// actually holds — not just objects this file happens to own. Everything here
-// goes through the real modules under src/.
-//
-// Note the destructured require below. Faking generateToken itself would be the
-// plan's hard case: the reference is copied once, at require time, so a spy
-// installed afterwards would be too late. It doesn't matter, because the double
-// is one level deeper — inside authServices, Redis is used as a live property
-// lookup, so require order here is irrelevant.
+// Verifies the doubles are what the app code resolves, not just objects this
+// file happens to own. Everything below goes through the real modules in src/.
 
 const { generateToken, verifyToken, deleteToken } = require('../src/services/authServices');
 const sendVerificationEmail = require('../src/utils/mailer');
@@ -23,12 +16,8 @@ describe('external service doubles', () => {
     it('generateToken writes both keys to the fake Redis', async () => {
         const token = await generateToken('user_abc');
 
-        // authServices writes a forward and a reverse key; both should be visible.
         expect(redisStore.get(`verify:token:${token}`)).toBe('user_abc');
         expect(redisStore.get(`verify:user:user_abc`)).toBe(token);
-
-        // And reading back through the real service works, which is what proves
-        // the double behaves like Redis rather than merely absorbing calls.
         expect(await verifyToken(token)).toBe('user_abc');
     });
 
@@ -39,7 +28,7 @@ describe('external service doubles', () => {
         await deleteToken('user_xyz');
 
         expect(redisStore.size).toBe(0);
-        expect(await verifyToken(token)).toBeNull();   // real client returns null, so the double must too
+        expect(await verifyToken(token)).toBeNull();
     });
 
     it('double state is reset between tests, like the collections are', () => {

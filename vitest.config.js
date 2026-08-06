@@ -7,9 +7,7 @@ export default defineConfig({
         include: ['tests/**/*.test.js'],
         setupFiles: ['tests/setup.js'],
         coverage: {
-            // Measure src/ only. Without this the report includes the suite's own
-            // helpers, padding the denominator with code that isn't the subject.
-            include: ['src/**/*.js'],
+            include: ['src/**/*.js'],   // otherwise the suite's own helpers get measured
         },
     }
 });
