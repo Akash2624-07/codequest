@@ -1,8 +1,9 @@
 const { z } = require('zod');
 
-// Keep in sync with LANGUAGE_MAP in src/utils/judge0.js and the frontend's
-// LANGUAGES list in frontend/src/schemas/problemSchema.js.
-const LANGUAGES = ['cpp', 'c', 'java', 'python', 'javascript'];
+// Derived from LANGUAGE_MAP, so a language the API accepts is always one Judge0
+// can run. The frontend's list in frontend/src/schemas/problemSchema.js is a
+// separate package and still has to be updated by hand.
+const { LANGUAGES } = require('../utils/languages');
 const languageEnum = z.enum(LANGUAGES);
 
 const visibleCase = z.object({

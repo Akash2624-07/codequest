@@ -2,7 +2,8 @@
 // polling loop, the batch check and the error mapping are exercised for real.
 
 const http = require('http');
-const { submitBatch, getSubmissionResults } = require('../src/utils/judge0');
+const { getLanguageId, submitBatch, getSubmissionResults } = require('../src/utils/judge0');
+const { LANGUAGES } = require('../src/utils/languages');
 
 let server, baseUrl, calls, mode;
 
@@ -37,6 +38,20 @@ afterAll(() => new Promise((resolve) => server.close(resolve)));
 beforeEach(() => {
     calls = 0;
     process.env.JUDGE0_BASE_URL = baseUrl;
+});
+
+describe('getLanguageId', () => {
+
+    it('maps every language the API accepts', () => {
+        for (const language of LANGUAGES) {
+            expect(typeof getLanguageId(language)).toBe('number');
+        }
+    });
+
+    it('rejects an unknown language as 400, not a bare Error', () => {
+        expect(() => getLanguageId('rust'))
+            .toThrow(expect.objectContaining({ name: 'AppError', statusCode: 400 }));
+    });
 });
 
 describe('getSubmissionResults', () => {

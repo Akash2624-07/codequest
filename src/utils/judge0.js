@@ -1,20 +1,11 @@
 const axios = require('axios');
 const AppError = require('./AppError');
-
-// Language Map 
-const LANGUAGE_MAP = {
-    "cpp": 54,
-    "c": 50,
-    "java": 62,
-    "python": 71,
-    "javascript": 63,
-
-}
+const { LANGUAGE_MAP } = require('./languages');
 
 const getLanguageId = (language) => {
-    const id = LANGUAGE_MAP[language.toLowerCase()];
+    const id = LANGUAGE_MAP[String(language).toLowerCase()];
     if (!id) {
-        throw new Error(`Unsupported Language: ${language}`);
+        throw new AppError(400, `Unsupported language: ${language}`);
     }
 
     return id;
