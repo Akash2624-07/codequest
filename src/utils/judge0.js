@@ -70,11 +70,17 @@ const POLL_BUDGET_MS = 20000;
 const POLL_MIN_DELAY_MS = 100;
 const POLL_MAX_DELAY_MS = 1000;
 
+// Problem creation verifies every reference solution against every test case,
+// so it queues languages x test cases submissions where submit/run queues one
+// set. Judge0 drains at COUNT=6 regardless, so the wait is proportionally
+// longer and needs its own budget.
+const VERIFY_POLL_BUDGET_MS = 60000;
+
 // Token polling to get actual data
-const getSubmissionResults = async (tokens) => {
+const getSubmissionResults = async (tokens, budgetMs = POLL_BUDGET_MS) => {
     const tokenString = tokens.map(t => t.token).join(",");
 
-    const deadline = Date.now() + POLL_BUDGET_MS;
+    const deadline = Date.now() + budgetMs;
     let delay = POLL_MIN_DELAY_MS;
 
     while (true) {
@@ -102,4 +108,4 @@ const getSubmissionResults = async (tokens) => {
 }
 
 
-module.exports = { getLanguageId, submitBatch, getSubmissionResults };
+module.exports = { getLanguageId, submitBatch, getSubmissionResults, VERIFY_POLL_BUDGET_MS };

@@ -47,6 +47,18 @@ describe('getSubmissionResults', () => {
         expect(elapsed).toBeGreaterThan(2000);
     });
 
+    it('honours a caller-supplied budget', async () => {
+        calls = 0;
+        mode = 'alwaysPending';
+
+        const startedAt = Date.now();
+        await expect(freshClient().getSubmissionResults([{ token: 'a' }], 400))
+            .rejects.toMatchObject({ name: 'AppError', statusCode: 504 });
+
+        // Gives up on its own budget, not the 20s default.
+        expect(Date.now() - startedAt).toBeLessThan(2000);
+    });
+
     it('reports a Judge0 error response as 502, not 500', async () => {
         calls = 0;
         mode = 'upstreamError';

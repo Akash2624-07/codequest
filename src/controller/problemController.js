@@ -1,5 +1,5 @@
 const Problem = require('../models/problem');
-const { getLanguageId, submitBatch, getSubmissionResults } = require('../utils/judge0');
+const { getLanguageId, submitBatch, getSubmissionResults, VERIFY_POLL_BUDGET_MS } = require('../utils/judge0');
 const AppError = require('../utils/AppError');
 
 const createProblem = async (req, res) => {
@@ -23,7 +23,7 @@ const createProblem = async (req, res) => {
 
         // Submit to Judge0
         const tokenObjects = await submitBatch(submissions);
-        const results = await getSubmissionResults(tokenObjects);
+        const results = await getSubmissionResults(tokenObjects, VERIFY_POLL_BUDGET_MS);
 
         // Judge0 status id 3 = Accepted
         const failedCase = results.find(r => r.status.id !== 3);
@@ -64,7 +64,7 @@ const updateProblem = async (req, res) => {
 
         // Submit to Judge0
         const tokenObjects = await submitBatch(submissions);
-        const results = await getSubmissionResults(tokenObjects);
+        const results = await getSubmissionResults(tokenObjects, VERIFY_POLL_BUDGET_MS);
 
         const failedCase = results.find(r => r.status.id !== 3);
         return failedCase ? { language, failedCase } : null;

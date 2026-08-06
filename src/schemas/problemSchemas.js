@@ -34,8 +34,17 @@ const problemSchema = z.object({
     description: z.string().min(10, 'Description must be at least 10 characters'),
     difficulty: z.enum(['easy', 'medium', 'hard']),
     tags: z.array(z.string().min(1)).min(1, 'Add at least one tag'),
-    visibleTestCase: z.array(visibleCase).min(1, 'Add at least one visible test case'),
-    hiddenTestCase: z.array(hiddenCase).min(1, 'Add at least one hidden test case'),
+    // Capped because problem creation verifies every reference solution against
+    // every test case, so peak Judge0 queue depth is languages x test cases.
+    // 5 languages x 25 stays under the instance's max_queue_size of 150.
+    visibleTestCase: z
+        .array(visibleCase)
+        .min(1, 'Add at least one visible test case')
+        .max(5, 'At most 5 visible test cases'),
+    hiddenTestCase: z
+        .array(hiddenCase)
+        .min(1, 'Add at least one hidden test case')
+        .max(20, 'At most 20 hidden test cases'),
     startCode: z.array(starterEntry).min(1, 'Add starter code for at least one language'),
     referenceSolution: z
         .array(solutionEntry)
