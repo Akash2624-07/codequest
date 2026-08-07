@@ -23,6 +23,10 @@ const errorHandler = (err, req, res, next) => {
 
     // Expected, client-facing errors thrown by controllers.
     if (err instanceof AppError) {
+        // 5xx means the client did nothing wrong and something on our side
+        // failed — we need to know, even though the error was "expected". 4xx is
+        // routine (bad input, not found) and logging it would bury the rest.
+        if (err.statusCode >= 500) console.error(err);
         return res.status(err.statusCode).json({ message: err.message });
     }
 

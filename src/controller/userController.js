@@ -24,11 +24,6 @@ const register = async (req, res) => {
         await sendVerificationEmail(user.emailId, token);
     }
     catch (err) {
-        // The AppError below reaches errorHandler, which only logs
-        // non-AppErrors — so without this the real cause (Redis down, SMTP
-        // refused) is never recorded anywhere.
-        console.error('[register] verification failed:', err.message);
-
         // Roll back BOTH sides. generateToken may have already written the
         // verify:token / verify:user pair to Redis, and those would otherwise
         // outlive the user for the full 10-minute TTL — leaving a token that
@@ -37,7 +32,7 @@ const register = async (req, res) => {
             User.findByIdAndDelete(user._id),
             deleteToken(user._id)
         ]);
-        throw new AppError(500, "Failed to send verification email. Please try again.");
+        throw new AppError(500, "Failed to send verification email. Please try again.", { cause: err });
     }
 
     return res.status(201).json({

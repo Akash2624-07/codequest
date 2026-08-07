@@ -93,34 +93,28 @@ describe('submitBatch', () => {
 
 describe('upstream failure mapping', () => {
 
-    // The interceptor logs the real axios error before wrapping it, because
-    // errorHandler only logs non-AppErrors. Spying both silences the expected
-    // stderr and pins that log line — without this it reads as debug cruft and
-    // deleting it would make every Judge0 failure silent, with tests still green.
-    let errorLog;
-    beforeEach(() => { errorLog = vi.spyOn(console, 'error').mockImplementation(() => {}); });
-    afterEach(() => errorLog.mockRestore());
-
+    // Each wrapped error must carry the axios error as its cause. errorHandler
+    // logs 5xx AppErrors and console.error prints the whole chain, so the cause
+    // is the only thing keeping the upstream detail alive after translation.
     it('reports a Judge0 error response as 502, not 500', async () => {
         mode = 'upstreamError';
 
         await expect(getSubmissionResults([{ token: 'a' }]))
-            .rejects.toMatchObject({ name: 'AppError', statusCode: 502 });
-
-        expect(errorLog).toHaveBeenCalledWith(
-            '[judge0]', 'ERR_BAD_RESPONSE', 503, expect.stringContaining('503')
-        );
+            .rejects.toMatchObject({
+                name: 'AppError',
+                statusCode: 502,
+                cause: expect.objectContaining({ code: 'ERR_BAD_RESPONSE' }),
+            });
     });
 
     it('reports an unreachable Judge0 as 503, not 500', async () => {
         process.env.JUDGE0_BASE_URL = 'http://127.0.0.1:1';   // nothing listening
 
         await expect(getSubmissionResults([{ token: 'a' }]))
-            .rejects.toMatchObject({ name: 'AppError', statusCode: 503 });
-
-        // The client is told nothing useful, so the cause must reach the log.
-        expect(errorLog).toHaveBeenCalledWith(
-            '[judge0]', 'ECONNREFUSED', '', expect.stringContaining('ECONNREFUSED')
-        );
+            .rejects.toMatchObject({
+                name: 'AppError',
+                statusCode: 503,
+                cause: expect.objectContaining({ code: 'ECONNREFUSED' }),
+            });
     });
 });
