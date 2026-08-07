@@ -38,4 +38,8 @@ jobs:
 
       - run: npm ci
 
+      # Before the tests: it takes ~2s and needs no database, so a lint failure
+      # is reported in seconds rather than after the suite.
+      - run: npm run lint
+
       - run: npm test
