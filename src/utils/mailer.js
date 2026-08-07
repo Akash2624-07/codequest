@@ -2,7 +2,7 @@ const transporter = require('../config/nodemailer');
 
 async function sendVerificationEmail(emailId, token){
 
-    const info = await transporter.sendMail({
+    await transporter.sendMail({
     from: {
         name: "CodeQuest Team",
         address:`noreply@codequest.com`,

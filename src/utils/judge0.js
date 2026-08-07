@@ -35,17 +35,16 @@ judge0Client.interceptors.request.use((config) => {
 judge0Client.interceptors.response.use(
     (response) => response,
     (error) => {
-        // The interceptor is the last place that still has the real error, and
-        // errorHandler only logs non-AppErrors.
-        console.error('[judge0]', error.code ?? '', error.response?.status ?? '', error.message);
-
+        // Carry the axios error as the cause: errorHandler logs 5xx AppErrors,
+        // and console.error prints the whole chain, so the upstream code and
+        // status survive translation.
         if (error.code === 'ECONNABORTED' || error.code === 'ETIMEDOUT') {
-            throw new AppError(504, 'Code execution service did not respond in time.');
+            throw new AppError(504, 'Code execution service did not respond in time.', { cause: error });
         }
         if (error.response) {
-            throw new AppError(502, 'Code execution service rejected the request.');
+            throw new AppError(502, 'Code execution service rejected the request.', { cause: error });
         }
-        throw new AppError(503, 'Code execution service is unavailable.');
+        throw new AppError(503, 'Code execution service is unavailable.', { cause: error });
     }
 );
 

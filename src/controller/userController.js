@@ -32,7 +32,7 @@ const register = async (req, res) => {
             User.findByIdAndDelete(user._id),
             deleteToken(user._id)
         ]);
-        throw new AppError(500, "Failed to send verification email. Please try again.");
+        throw new AppError(500, "Failed to send verification email. Please try again.", { cause: err });
     }
 
     return res.status(201).json({

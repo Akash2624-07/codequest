@@ -2,6 +2,10 @@
 // module scope, so a later dotenv leaves it holding undefined forever.
 require('dotenv').config();
 
+// Before the requires below, so a missing key is reported as itself rather than
+// as a connection failure three layers down.
+require('./config/env')();
+
 const app = require('./app');
 const Main = require('./config/database');
 const redisClient = require('./config/redis');

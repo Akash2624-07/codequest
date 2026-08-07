@@ -11,7 +11,10 @@ const errorHandler = require('./middleware/errorHandler');
 const app = express();
     
 app.use(cors({
-    origin: 'http://localhost:5173',
+    // Falls back rather than passing undefined: with credentials:true, an
+    // undefined origin makes cors reflect whatever Origin the request carries,
+    // which allows every site instead of none.
+    origin: process.env.CLIENT_URL || 'http://localhost:5173',
     credentials: true
 }));
 
