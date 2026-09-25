@@ -1,0 +1,19 @@
+# Dependencies: regenerable with `npm install`
+node_modules/
+
+# Build output: regenerable with `npm run build`
+dist/
+*.tsbuildinfo
+
+# Test coverage: regenerable with `vitest --coverage`
+coverage/
+
+# Secrets: every .env variant, except the committed template
+.env*
+!.env.example
+
+# Personal scratch notes
+notes/
+
+# Logs
+*.log
