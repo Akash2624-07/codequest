@@ -2,7 +2,10 @@
   "name": "codequest",
   "version": "0.0.1",
   "description": "A learning-first online judge: guided DSA journeys from Arrays to DP, async code judging on self-hosted Judge0, XP, streaks, and public stats profiles.",
-  "scripts": {},
+  "scripts": {
+    "build": "npm run build --workspaces --if-present",
+    "typecheck": "npm run typecheck --workspaces --if-present"
+  },
   "author": "Akash",
   "license": "MIT",
   "type": "module",
@@ -13,5 +16,8 @@
   ],
   "engines": {
     "node": "^24"
+  },
+  "devDependencies": {
+    "typescript": "^7.0.2"
   }
 }

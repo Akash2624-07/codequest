@@ -1,0 +1,9 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "composite": true,   // other workspaces can reference this project (apps/api, Day 3)
+    "rootDir": "src",    // src/languages.ts → dist/languages.js, never dist/src/…
+    "outDir": "dist"     // compiled .js, .d.ts and .map files
+  },
+  "include": ["src"]
+}
