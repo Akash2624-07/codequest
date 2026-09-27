@@ -1,0 +1,34 @@
+{
+  // Shared by every workspace. Each package's tsconfig.json extends this and
+  // adds its own paths (rootDir, outDir, include): relative paths resolve from
+  // the file that defines them, so paths here would point at the repo root.
+  // Why each checking flag: docs/02_02-javascript-to-typescript.md §6.
+  "compilerOptions": {
+    // --- The flags from the table ---
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "erasableSyntaxOnly": true,
+    "verbatimModuleSyntax": true,
+
+    // --- What Node 24 runs natively ---
+    "target": "ES2025",       // newest syntax Node 24 fully supports, so tsc only erases types
+    "lib": ["ES2025"],        // built-in APIs to allow: no DOM (apps/web adds it), nothing Node 24 lacks
+    "types": [],              // no global @types unless a package opts in (apps/api: ["node"])
+
+    // --- Module safety ---
+    "moduleDetection": "force",           // every file is a module, never a global script
+    "isolatedModules": true,              // each file must compile alone (tsx, Vite and Node's type stripping work per file)
+    "noUncheckedSideEffectImports": true, // `import "./setup.js"` must point at a file that exists
+
+    // --- Output ---
+    "declaration": true,      // emit .d.ts so other packages get types (composite requires it)
+    "declarationMap": true,   // go-to-definition jumps to the .ts source, not the .d.ts
+    "sourceMap": true,        // error stack traces point to your .ts lines, not the .js output
+
+    // --- Everything else ---
+    "skipLibCheck": true,     // don't type-check library .d.ts files (faster, avoids errors you can't fix)
+    "forceConsistentCasingInFileNames": true // "./Utils.js" vs "./utils.js" is an error, not a surprise on Linux
+  }
+}
