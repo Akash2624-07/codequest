@@ -18,6 +18,9 @@ import { LANGUAGE_IDS, type Language } from "@codequest/shared";
 Import from the package root only. `exports` in `package.json` blocks deep
 imports such as `@codequest/shared/src/languages.js`.
 
+The entry point is compiled output (`dist/index.js`), so run
+`npm run build` once after cloning, before importing the package from Node.
+
 ## Conventions
 
 - **`interface` for object shapes written by hand; `type` for everything
@@ -34,5 +37,6 @@ imports such as `@codequest/shared/src/languages.js`.
 
 | Command | What it does |
 |---|---|
+| `npm run build -w packages/shared` | Compiles `src/` to `dist/` (`.js`, `.d.ts`, source maps) |
 | `npm run typecheck -w packages/shared` | Type-checks this package without writing output |
-| `npm run typecheck` (repo root) | Type-checks every workspace |
+| `npm run build` / `npm run typecheck` (repo root) | The same, for every workspace |
