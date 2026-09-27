@@ -1,0 +1,13 @@
+{
+  "name": "@codequest/shared",
+  "version": "0.0.1",
+  "description": "Code shared by every CodeQuest workspace: the language list now; domain types and zod schemas later.",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./dist/index.js"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  }
+}
