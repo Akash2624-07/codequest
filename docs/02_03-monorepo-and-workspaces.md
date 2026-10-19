@@ -1,64 +1,85 @@
 # 02_03 · Monorepo, npm workspaces and Turborepo
 
-_Discussion, 2026-09-25. An architecture decision record that expands
-`02-architecture.md` §2.3._
+_A discussion from 2026-09-25. It is an architecture decision
+record (a short document that writes down one design decision and the reasons
+for it), and it goes into more detail on section 2.3 of `02-architecture.md`._
 
-**Decision:** one repository managed with **npm workspaces**
-(`apps/api`, `apps/web`, `packages/shared`). **No Turborepo yet**; add it when
-a measured trigger is hit (§5).
+## What this is about, in one paragraph
+
+A monorepo is a single git repository that holds several projects (packages)
+side by side. This document explains how CodeQuest is organised as one: what
+went wrong with the old project's layout, what you gain and lose with a
+monorepo, what npm's built-in "workspaces" feature does and doesn't do, and
+what an extra tool called Turborepo would add. It ends with the decision not
+to use Turborepo yet, and the clear signs that will tell you when it's time.
+
+**The decision in one sentence:** CodeQuest is one repository managed with
+**npm workspaces**, with three packages (`apps/api`, `apps/web` and
+`packages/shared`). **There is no Turborepo yet.** It gets added only when a
+measured trigger is hit (Topic 5).
 
 ---
 
-## 1. Was the old codequest a monorepo?
+## Topic 1: was the old codequest a monorepo?
 
-Loosely, yes: two projects in one git repo. But it had none of the benefits
-that make a monorepo worth it. Evidence from `../codequest`:
+Loosely, yes, because it had two projects in one git repo. But it had none of
+the benefits that make a monorepo worth having. The evidence, from the old
+project in `../codequest`:
 
-- **The backend was the repo root, and the frontend sat inside it.** That's
-  why `eslint.config.mjs:8` had to exclude it with
+- **The backend was the root of the repo, and the frontend sat inside it.**
+  That is why the ESLint config had to tell the linter to skip the frontend
+  folder, at `eslint.config.mjs:8`, with
   `globalIgnores(['frontend/', …])`.
-- **Two separate installs and two lockfiles:** `package-lock.json` and
-  `frontend/package-lock.json`.
-- **CI only covered the backend.** `.github/workflows/test.yml` runs
-  `npm ci`, lint and test at the root. **The frontend was never linted, built
-  or tested in CI**, so a change that broke the frontend build could merge
-  with a green check.
-- **No shared code.** The language list was copied by hand, with a warning
-  comment in `src/utils/languages.js` to keep the two in sync.
+- **There were two separate installs and two lockfiles:**
+  `package-lock.json` and `frontend/package-lock.json`.
+- **CI only covered the backend.** The workflow file
+  `.github/workflows/test.yml` runs `npm ci` (a clean install), lint and test,
+  all at the root. **The frontend was never linted, built or tested in CI.**
+  So a change that broke the frontend build could still be merged with a green
+  check mark.
+- **No code was shared.** The list of languages was copied by hand into both
+  projects, with a warning comment in `src/utils/languages.js` reminding you
+  to keep the two copies in sync.
 
-So it was a monorepo **by location, not by tooling**: effectively two repos
-that happened to share a `.git` folder.
+So it was a monorepo **by location, not by tooling**. In practice it was two
+separate repos that just happened to share one `.git` folder.
 
 ---
 
-## 2. Why use a monorepo
+## Topic 2: why use a monorepo
 
-**What you gain**
+### What you gain
 
-- **One commit changes everything that must change together.** The shared
-  schema, the API and the frontend change in one PR and are compile-checked
-  together. The old `userinfo` / `userInfo` bug (commit `4865915`) would have
-  been one PR that couldn't merge broken.
-- **Share code without publishing it** to npm.
-- **One install, one lockfile, one CI workflow, one release tag** per
+- **One commit can change everything that must change together.** The shared
+  schema, the API and the frontend can all change in one PR (pull request),
+  and they are type-checked together. The old `userinfo` / `userInfo` bug
+  (commit `4865915`, where the server and frontend used different spellings of
+  a field name) would have been one PR that couldn't be merged while broken.
+- **You can share code without publishing it** to npm.
+- **One install, one lockfile, one CI workflow, and one release tag** for each
   milestone.
-- **One set of configs:** `tsconfig.base.json`, one ESLint config, one
-  Prettier config.
+- **One set of configs:** one `tsconfig.base.json`, one ESLint config and one
+  Prettier config for the whole repo.
 
-**What it costs**
+### What it costs
 
-- The workspace setup, which is the fiddliest part of Phase 0.
-- CI runs everything unless you filter it.
-- Building a Docker image for one app needs the root lockfile plus the shared
-  package, not just that app's folder.
+- Setting up the workspaces, which is the fiddliest part of Phase 0.
+- CI runs everything on every change, unless you add filtering.
+- Building a Docker image for one app needs more than that app's folder. It
+  also needs the root lockfile and the shared package.
 
-**The alternative, separate repos (a "polyrepo"),** would mean publishing
-`@codequest/shared` to a registry and bumping its version in each repo. That's
-pure overhead for a solo project.
+### The alternative: separate repos
+
+The other option is one repo per project, called a "polyrepo". Then
+`@codequest/shared` would have to be published to a registry (a package
+server like npm), and every other repo would have to bump its version number
+each time it changed. For a project with one developer, that is pure overhead.
 
 ---
 
-## 3. What npm workspaces does
+## Topic 3: what npm workspaces does
+
+Workspaces are set up with two kinds of `package.json` file:
 
 ```jsonc
 // root package.json
@@ -68,93 +89,134 @@ pure overhead for a solo project.
 { "name": "@codequest/api", "dependencies": { "@codequest/shared": "*" } }
 ```
 
-It does four things:
+- The **root** `package.json` lists the folders that hold packages.
+- Each **package** has its own `package.json`. Here the API says it depends on
+  `@codequest/shared`. The `"*"` means "any version", which in practice means
+  "the local copy".
 
-1. **One install, one lockfile.** `npm install` at the root installs every
-   workspace's dependencies.
-2. **Linking.** It creates a symlink
-   `node_modules/@codequest/shared → packages/shared`. So
-   `import { LANGUAGE_IDS } from '@codequest/shared'` resolves to the local
-   folder, and edits show up instantly with nothing to publish.
-3. **Hoisting.** Dependencies used by several workspaces are installed once,
-   in the root `node_modules`.
-4. **Running scripts per workspace or across all of them:**
-   - `npm run dev -w apps/api` runs one workspace's script.
-   - `npm run test --workspaces --if-present` runs it in every workspace that
-     has one.
+With that in place, npm workspaces does four things:
+
+1. **One install, one lockfile.** Running `npm install` at the root installs
+   the dependencies of every workspace at once.
+2. **Linking.** npm creates a symlink (a shortcut) at
+   `node_modules/@codequest/shared` that points to the `packages/shared`
+   folder. So when code writes
+   `import { LANGUAGE_IDS } from '@codequest/shared'`, it gets the local
+   folder. Your edits show up instantly, and there is nothing to publish.
+3. **Hoisting.** If several workspaces use the same dependency, it is
+   installed only once, in the `node_modules` folder at the root. ("Hoisting"
+   means lifting it up to the top level.)
+4. **Running scripts in one workspace or in all of them:**
+   - `npm run dev -w apps/api` runs the `dev` script of one workspace only.
+   - `npm run test --workspaces --if-present` runs the `test` script in every
+     workspace that has one. `--if-present` skips workspaces without that
+     script instead of failing.
 
 ### What it doesn't do
 
-- **No dependency-aware order.** `npm run build --workspaces` runs in the
-  listed order, not by what depends on what. That's why `packages/*` comes
-  first above. TypeScript's `tsc -b` (project references) also builds in the
-  right order.
-- **No parallel runs.** To run the API and web dev servers together you need
-  a small helper like `concurrently`.
-- **No caching.** Every run redoes all the work.
+- **It doesn't work out the right order.** `npm run build --workspaces` runs
+  the builds in the order the folders are listed, not based on which package
+  depends on which. That's why `packages/*` is listed first in the root
+  `package.json` above: the shared package must be built before the apps that
+  use it. TypeScript's `tsc -b` (build mode, using "project references") also
+  builds packages in the right order.
+- **It doesn't run things in parallel.** To run the API and web dev servers at
+  the same time, you need a small helper tool such as `concurrently`.
+- **It doesn't cache anything.** Every run redoes all the work from scratch.
 - **Gotcha: phantom dependencies.** Because packages are hoisted to the root,
-  `apps/web` can import a package that only `apps/api` declared. It works on
-  your machine and breaks in an isolated Docker build. A lint rule can catch
-  it (`import/no-extraneous-dependencies`).
-- **No `workspace:*` version syntax** (pnpm and Yarn have it), so shared
-  packages are declared with `"*"`.
+  `apps/web` can import a package that only `apps/api` listed as a
+  dependency. It works on your machine, because the package happens to be in
+  the root `node_modules`. Then it breaks in an isolated Docker build, where
+  only the web app's own dependencies are installed. A lint rule can catch
+  this: `import/no-extraneous-dependencies`.
+- **It has no `workspace:*` version syntax.** Other package managers (pnpm
+  and Yarn) have a special `workspace:*` version that means "always use the
+  local package". npm doesn't, so shared packages are declared with `"*"`
+  instead.
 
 ---
 
-## 4. What Turborepo adds
+## Topic 4: what Turborepo adds
 
-**Turborepo doesn't replace workspaces; it runs on top of them.** It adds
-exactly what §3 lists as missing:
+**Turborepo doesn't replace workspaces. It runs on top of them.** It adds
+exactly the things Topic 3 lists as missing:
 
-- **Dependency-aware order:** `"build": { "dependsOn": ["^build"] }` builds
-  `shared` before `api` and `web` automatically.
-- **Parallel runs.**
-- **Caching:** it fingerprints each task's inputs, and unchanged tasks replay
-  their previous output instantly. A remote cache can share this with CI.
-- **Filtering:** it can run tests only in packages affected by a change.
+- **Dependency-aware order.** A setting like
+  `"build": { "dependsOn": ["^build"] }` means "before building a package,
+  first build the packages it depends on". So `shared` is built before `api`
+  and `web` automatically.
+- **Parallel runs.** Tasks that don't depend on each other run at the same
+  time.
+- **Caching.** Turborepo takes a fingerprint of each task's inputs (its
+  files and settings). If nothing changed, it replays the previous output
+  instantly instead of running the task again. A remote cache can share these
+  results with CI.
+- **Filtering.** It can run tests only in the packages affected by a change.
 
 ---
 
-## 5. Why not Turborepo yet
+## Topic 5: why not Turborepo yet
 
-- **With 3 packages, builds and tests take seconds**, so caching saves almost
-  nothing.
-- **Build order is already covered** by the workspace order and `tsc -b`.
-- **Learn it in the right order.** Wire up workspaces by hand first, so you
-  know exactly what Turborepo automates. Starting with it means copying config
-  you don't yet understand.
-- **It's cheap to add later.** It's one dev dependency and a `turbo.json`; the
-  existing scripts don't change. Waiting costs nothing.
+- **With 3 packages, builds and tests take seconds**, so caching would save
+  almost nothing.
+- **Build order is already handled** by the workspace order and by `tsc -b`.
+- **Learn things in the right order.** Set up workspaces by hand first, so you
+  know exactly what Turborepo is automating. If you start with it, you end up
+  copying config you don't understand yet.
+- **It's cheap to add later.** It's one dev dependency plus a `turbo.json`
+  file, and the existing scripts don't change. Waiting costs nothing.
 
-**When to add it:**
+### When to add it
+
+Add Turborepo when one of these happens:
 
 - CI regularly takes more than about 5 minutes, or
 - you catch yourself wanting to "only test what changed".
 
-That's likely around v2, when there may be more packages (for example a
-`packages/judge-client`). Adding it then also comes with a measured reason
-("CI went from X to Y minutes"). Same "measure first" approach as the BullMQ
-buffer in the brief.
+That will probably be around v2, when there may be more packages (for
+example a `packages/judge-client`). Adding it at that point also gives you a
+measured reason, such as "CI went from X to Y minutes". This is the same
+"measure first" approach as the BullMQ buffer in the brief.
 
 ### Alternatives worth knowing
 
-- **pnpm workspaces:** faster, supports `workspace:*`, and its stricter
-  `node_modules` layout prevents phantom dependencies entirely. The most
-  likely upgrade from npm, possibly adopted together with Turborepo.
-- **Nx:** heavier and more opinionated. Overkill here.
+- **pnpm workspaces.** pnpm is another package manager. It is faster, supports
+  `workspace:*`, and its stricter `node_modules` layout makes phantom
+  dependencies impossible. It is the most likely upgrade from npm, possibly
+  adopted at the same time as Turborepo.
+- **Nx.** Another monorepo tool, heavier and more opinionated (it decides more
+  things for you). Overkill for this project.
 
 ---
 
-## 6. Takeaways
+## Topic 6: the main lessons
 
-- **The old CI gap was a monorepo problem.** Because the frontend was nested
-  inside the backend's package, the root `npm test` naturally meant "backend
-  tests". With workspaces, `npm run test --workspaces` includes every package
-  by default, so nothing can be silently left out of CI.
-- **Tools come in layers:**
-  - The package manager (npm) installs and links.
-  - A task runner (Turborepo) orders and caches tasks.
-  - TypeScript project references order the compiles.
+- **The old CI gap was really a monorepo problem.** Because the frontend was
+  nested inside the backend's package, running `npm test` at the root
+  naturally meant "the backend tests" only. With workspaces,
+  `npm run test --workspaces` includes every package by default, so nothing
+  can be quietly left out of CI.
+- **Tools come in layers, and each layer solves a different problem:**
+  - The package manager (npm) installs and links packages.
+  - A task runner (Turborepo) puts tasks in order and caches them.
+  - TypeScript project references put the compiles in the right order.
 
-  Knowing which layer solves which problem is what lets you judge "do I need
-  Turborepo?" instead of adopting it because templates include it.
+  Knowing which layer solves which problem lets you answer "do I need
+  Turborepo?" yourself, instead of adopting it just because project templates
+  include it.
+
+---
+
+## In short
+
+- CodeQuest is one repo with three packages (`apps/api`, `apps/web`,
+  `packages/shared`), managed with npm workspaces.
+- The old project was a monorepo only by location: two lockfiles, no shared
+  code, and a frontend that CI never checked.
+- Workspaces give one install, one lockfile, local linking and hoisting, but
+  no build ordering, no parallel runs and no caching. Watch out for phantom
+  dependencies.
+- Turborepo adds ordering, parallel runs, caching and filtering on top of
+  workspaces, but isn't worth it yet with 3 small packages.
+- Add Turborepo when CI regularly takes more than about 5 minutes, or when you
+  want to "only test what changed". pnpm is the likely upgrade from npm.
