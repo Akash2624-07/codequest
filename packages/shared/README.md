@@ -18,8 +18,18 @@ import { LANGUAGE_IDS, type Language } from "@codequest/shared";
 Import from the package root only. `exports` in `package.json` blocks deep
 imports such as `@codequest/shared/src/languages.js`.
 
-The entry point is compiled output (`dist/index.js`), so run
-`npm run build` once after cloning, before importing the package from Node.
+`exports` has two conditions, tried in order:
+
+| Condition | File | Who asks for it |
+|---|---|---|
+| `development` | `./src/index.ts` | `tsx --conditions=development` (the api's `dev` script), and tsconfigs with `customConditions: ["development"]`; Vite adds it in dev (Day 10) |
+| `default` | `./dist/index.js` | Plain `node`, e.g. `npm start` in `apps/api` |
+
+So in development, edits to `src/` are picked up without a build. Anything
+that runs plain `node` needs `dist/`: `tsc -b` in a dependent package builds
+it first through project references. `tsc` itself also needs this package's
+`.d.ts` built, even with the `development` condition, because project
+references swap the source for its declaration output.
 
 ## Conventions
 
