@@ -1,4 +1,5 @@
 import express, { type Express } from "express";
+import { LANGUAGE_IDS } from "@codequest/shared";
 
 // Builds the app without listening, so tests (Day 6) can import it and send
 // requests through supertest without opening a port. main.ts does the
@@ -13,6 +14,12 @@ export function createApp(): Express {
 
   api.get("/health", (_req, res) => {
     res.json({ status: "ok" });
+  });
+
+  // Proves the cross-package wiring. Sent as-is ({ cpp: 54, … }); the shape
+  // of list responses is Day 9's decision.
+  api.get("/languages", (_req, res) => {
+    res.json(LANGUAGE_IDS);
   });
 
   app.use("/api", api);
