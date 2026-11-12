@@ -1,0 +1,12 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "rootDir": "src",      // src/main.ts → dist/main.js
+    "outDir": "dist",
+    "types": ["node"]      // Node globals (process, console, Buffer) for this package only
+  },
+  "include": ["src"],
+  // `tsc -b` builds packages/shared first, and imports of it type-check
+  // against its emitted .d.ts instead of recompiling its source here.
+  "references": [{ "path": "../../packages/shared" }]
+}
