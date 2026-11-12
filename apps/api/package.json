@@ -1,0 +1,22 @@
+{
+  "name": "@codequest/api",
+  "version": "0.0.1",
+  "description": "CodeQuest HTTP API: Express 5 on Node 24, ESM, strict TypeScript.",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "tsc -b",
+    "start": "node --enable-source-maps dist/main.js",
+    "typecheck": "tsc -b",
+    "dev": "tsx watch --conditions=development src/main.ts"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.6",
+    "@types/node": "^24.19.2",
+    "tsx": "^4.23.15"
+  },
+  "dependencies": {
+    "@codequest/shared": "0.0.1",
+    "express": "^5.3.0"
+  }
+}

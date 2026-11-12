@@ -1,0 +1,16 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "rootDir": "src",      // src/main.ts → dist/main.js
+    "outDir": "dist",
+    "types": ["node"],     // Node globals (process, console, Buffer) for this package only
+    // Resolve @codequest/shared through its "development" export (src/*.ts),
+    // the same file tsx loads in dev. Types only: tsc never changes what
+    // `node dist/main.js` resolves at runtime, which is "default" → dist.
+    "customConditions": ["development"]
+  },
+  "include": ["src"],
+  // `tsc -b` builds packages/shared first, and imports of it type-check
+  // against its emitted .d.ts instead of recompiling its source here.
+  "references": [{ "path": "../../packages/shared" }]
+}
